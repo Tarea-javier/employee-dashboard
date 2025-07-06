@@ -6,7 +6,7 @@ class EmployeeDashboard {
         this.data = [];
         this.charts = {};
 
-        // NUEVA PALETA DE COLORES PASTEL: Vibrante y estética
+        // Mantenemos la paleta de colores pastel que te gustó
         this.pastelPalette = [
             '#54a0ff', '#ff9f43', '#1dd1a1', '#ff6b6b', '#feca57',
             '#48dbfb', '#ff7979', '#c8d6e5', '#576574', '#eccc68'
@@ -17,21 +17,21 @@ class EmployeeDashboard {
 
     init() {
         console.log('Initializing dashboard...');
-        if (typeof Chart === 'undefined' || typeof Chart.controllers.boxplot === 'undefined') {
-            console.error('Chart.js or a required plugin is missing.');
-            return;
+        // CORRECCIÓN CLAVE: La comprobación de errores ahora es más simple y robusta.
+        // Solo necesitamos asegurarnos de que el objeto principal 'Chart' existe.
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js library is missing. Execution stopped.');
+            return; // Detiene todo si la librería principal no carga.
         }
         this.configureChartDefaults();
         this.loadInitialData();
     }
     
-    // Configuración global para todas las gráficas
     configureChartDefaults() {
         Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
-        Chart.defaults.plugins.legend.position = 'bottom'; // Leyenda abajo, más compacto
+        Chart.defaults.plugins.legend.position = 'bottom';
         Chart.defaults.plugins.legend.labels.usePointStyle = true;
         Chart.defaults.plugins.legend.labels.boxWidth = 8;
-        // CORREGIDO: Se fuerza a las gráficas a llenar el contenedor
         Chart.defaults.maintainAspectRatio = false; 
     }
     
@@ -102,7 +102,9 @@ class EmployeeDashboard {
     }
     
     createAllCharts() {
-        Object.values(this.charts).forEach(chart => chart.destroy());
+        Object.values(this.charts).forEach(chart => {
+            if (chart) chart.destroy();
+        });
         this.charts = {};
         
         this.createSalaryChart();
@@ -147,7 +149,7 @@ class EmployeeDashboard {
         }, {})).map(([dept, data]) => ({
             label: dept,
             data,
-            backgroundColor: this.getColor(dept, this.pastelPalette) + 'B3', // 70% opacity
+            backgroundColor: this.getColor(dept, this.pastelPalette) + 'B3',
         }));
 
         this.charts.satisfaction = new Chart('satisfactionChart', {
