@@ -6,7 +6,14 @@ class EmployeeDashboard {
         console.log('Creating dashboard...');
         this.data = [];
         this.charts = {};
-        
+
+        // Paleta de colores pastel inspirada en las librerías de visualización de Python
+        this.pastelColors = [
+            '#a6cee3', '#1f78b4', '#b2df8a', '#33a02c', '#fb9a99', 
+            '#e31a1c', '#fdbf6f', '#ff7f00', '#cab2d6', '#6a3d9a'
+        ];
+        this.departmentColorMap = {};
+
         this.init();
     }
 
@@ -24,10 +31,18 @@ class EmployeeDashboard {
         this.loadInitialData();
     }
 
+    // Función para asignar un color consistente a cada departamento
+    getDepartmentColor(department) {
+        if (!this.departmentColorMap[department]) {
+            const colorIndex = Object.keys(this.departmentColorMap).length % this.pastelColors.length;
+            this.departmentColorMap[department] = this.pastelColors[colorIndex];
+        }
+        return this.departmentColorMap[department];
+    }
+    
     async loadInitialData() {
         console.log('Loading initial data from data/work.csv...');
         try {
-            // La ruta es relativa a index.html
             const response = await fetch('data/work.csv');
             if (!response.ok) {
                 throw new Error(`Network response was not ok: ${response.statusText}`);
@@ -94,7 +109,7 @@ class EmployeeDashboard {
             if (index !== -1) return index;
         }
         console.warn(`Could not find a column for: ${possibilities.join(' or ')}`);
-        return -1; // Devolver -1 si no se encuentra
+        return -1;
     }
 
     updateMetrics() {
@@ -166,15 +181,26 @@ class EmployeeDashboard {
             data: {
                 labels: labels,
                 datasets: [{
+                    label: 'Average Salary',
                     data: data,
-                    backgroundColor: '#1a73e8',
+                    // MEJORA: Se usan colores de la paleta pastel
+                    backgroundColor: labels.map(dept => this.getDepartmentColor(dept) + 'B3'), // B3 = 70% opacidad
+                    borderColor: labels.map(dept => this.getDepartmentColor(dept)),
+                    borderWidth: 1,
                     borderRadius: 4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => `Avg. Salary: $${context.parsed.y.toLocaleString()}`
+                        }
+                    }
+                },
                 scales: {
                     y: {
                         beginAtZero: false,
@@ -188,29 +214,73 @@ class EmployeeDashboard {
     createScatterChart() {
         const canvas = document.getElementById('scatterChart');
         if (!canvas) return;
+        
+        // MEJORA: Agrupamos los datos por departamento para crear un dataset por cada uno
+        const dataByDept = this.data.reduce((acc, emp) => {
+            if (!acc[emp.department]) {
+                acc[emp.department] = [];
+            }
+            acc[emp.department].push(emp);
+            return acc;
+        }, {});
 
-        const scatterData = this.data.map(emp => ({
-            x: emp.satisfaction,
-            y: emp.productivity
-        }));
+        const datasets = Object.keys(dataByDept).map(dept => {
+            const color = this.getDepartmentColor(dept);
+            return {
+                label: dept,
+                data: dataByDept[dept].map(emp => ({
+                    x: emp.satisfaction,
+                    y: emp.productivity,
+                    // Pasamos datos adicionales para el tooltip
+                    salary: emp.salary 
+                })),
+                // MEJORA: Color por departamento y con transparencia para ver la densidad
+                backgroundColor: color + '99', // 99 = 60% opacidad
+                borderColor: color,
+                borderWidth: 1,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+            };
+        });
 
         this.charts.scatter = new Chart(canvas, {
             type: 'scatter',
-            data: {
-                datasets: [{
-                    data: scatterData,
-                    backgroundColor: '#ea4335',
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                }]
-            },
+            data: { datasets: datasets },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    // MEJORA: Tooltip personalizado para mostrar más información
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const raw = context.raw;
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                label += `(Satisfaction: ${raw.x}, Productivity: ${raw.y})`;
+                                return label;
+                            },
+                            afterLabel: function(context) {
+                                const raw = context.raw;
+                                return `Salary: $${raw.salary.toLocaleString()}`;
+                            }
+                        }
+                    }
+                },
                 scales: {
-                    x: { title: { display: true, text: 'Satisfaction' } },
-                    y: { title: { display: true, text: 'Productivity' } }
+                    x: { 
+                        title: { display: true, text: 'Job Satisfaction (1-10)' },
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                    },
+                    y: { 
+                        title: { display: true, text: 'Productivity Score (0-100)' },
+                        grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                    }
                 }
             }
         });
@@ -231,13 +301,21 @@ class EmployeeDashboard {
                 labels: Object.keys(zoneCounts),
                 datasets: [{
                     data: Object.values(zoneCounts),
-                    backgroundColor: ['#1a73e8', '#34a853', '#fbbc04', '#ea4335', '#9aa0a6']
+                    // MEJORA: Se usa la paleta de colores pastel
+                    backgroundColor: this.pastelColors,
+                    borderColor: '#ffffff',
+                    borderWidth: 2
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                cutout: '60%'
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
             }
         });
     }
@@ -246,12 +324,12 @@ class EmployeeDashboard {
         const canvas = document.getElementById('ageChart');
         if (!canvas) return;
 
-        const ageGroups = { '< 30': 0, '30-39': 0, '40-49': 0, '50+': 0 };
+        const ageGroups = { '< 30': 0, '30-40': 0, '40-50': 0, '50+': 0 };
         
         this.data.forEach(emp => {
             if (emp.age < 30) ageGroups['< 30']++;
-            else if (emp.age < 40) ageGroups['30-39']++;
-            else if (emp.age < 50) ageGroups['40-49']++;
+            else if (emp.age < 40) ageGroups['30-40']++;
+            else if (emp.age < 50) ageGroups['40-50']++;
             else ageGroups['50+']++;
         });
 
@@ -261,12 +339,20 @@ class EmployeeDashboard {
                 labels: Object.keys(ageGroups),
                 datasets: [{
                     data: Object.values(ageGroups),
-                    backgroundColor: ['#1a73e8', '#34a853', '#fbbc04', '#ea4335']
+                    // MEJORA: Se usa la paleta de colores pastel
+                    backgroundColor: this.pastelColors,
+                    borderColor: '#ffffff',
+                    borderWidth: 2
                 }]
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
             }
         });
     }
