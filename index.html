@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Analytics Dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -28,35 +29,35 @@
         </div>
 
         <!-- Dashboard Content -->
-        <div id="dashboard" style="display: none;">
+        <div id="dashboard">
             <!-- Key Metrics -->
             <section class="metrics-section">
                 <div class="metrics-grid">
                     <div class="metric-card employees-card">
                         <div class="metric-icon">👥</div>
                         <div class="metric-content">
-                            <div class="metric-value" id="totalEmployees">0</div>
+                            <div class="metric-value" id="totalEmployees">100</div>
                             <div class="metric-label">Total Employees</div>
                         </div>
                     </div>
                     <div class="metric-card salary-card">
                         <div class="metric-icon">💰</div>
                         <div class="metric-content">
-                            <div class="metric-value" id="avgSalary">$0</div>
+                            <div class="metric-value" id="avgSalary">$85,250</div>
                             <div class="metric-label">Average Salary</div>
                         </div>
                     </div>
                     <div class="metric-card satisfaction-card">
                         <div class="metric-icon">😊</div>
                         <div class="metric-content">
-                            <div class="metric-value" id="avgSatisfaction">0</div>
+                            <div class="metric-value" id="avgSatisfaction">7.8</div>
                             <div class="metric-label">Job Satisfaction</div>
                         </div>
                     </div>
                     <div class="metric-card productivity-card">
                         <div class="metric-icon">📈</div>
                         <div class="metric-content">
-                            <div class="metric-value" id="avgProductivity">0</div>
+                            <div class="metric-value" id="avgProductivity">89</div>
                             <div class="metric-label">Productivity Score</div>
                         </div>
                     </div>
@@ -72,24 +73,43 @@
                             <label for="departmentFilter">Department</label>
                             <select id="departmentFilter" class="filter-select">
                                 <option value="">All Departments</option>
+                                <option value="Tecnología">Tecnología</option>
+                                <option value="Legal">Legal</option>
+                                <option value="Diseño">Diseño</option>
+                                <option value="Operaciones">Operaciones</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Ventas">Ventas</option>
+                                <option value="RRHH">RRHH</option>
                             </select>
                         </div>
                         <div class="filter-group">
                             <label for="zoneFilter">Geographic Zone</label>
                             <select id="zoneFilter" class="filter-select">
                                 <option value="">All Zones</option>
+                                <option value="Centro">Centro</option>
+                                <option value="Norte">Norte</option>
+                                <option value="Sur">Sur</option>
+                                <option value="Sureste">Sureste</option>
+                                <option value="Occidente">Occidente</option>
                             </select>
                         </div>
                         <div class="filter-group">
                             <label for="modalityFilter">Work Modality</label>
                             <select id="modalityFilter" class="filter-select">
                                 <option value="">All Modalities</option>
+                                <option value="Presencial">Presencial</option>
+                                <option value="Remoto">Remoto</option>
+                                <option value="Híbrido">Híbrido</option>
                             </select>
                         </div>
                         <div class="filter-group">
                             <label for="educationFilter">Education Level</label>
                             <select id="educationFilter" class="filter-select">
                                 <option value="">All Levels</option>
+                                <option value="Técnico">Técnico</option>
+                                <option value="Licenciatura">Licenciatura</option>
+                                <option value="Maestría">Maestría</option>
+                                <option value="Doctorado">Doctorado</option>
                             </select>
                         </div>
                         <div class="filter-group">
@@ -203,9 +223,239 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="js/data-processor.js"></script>
-    <script src="js/charts.js"></script>
-    <script src="js/main.js"></script>
+    <script>
+        // Sample data and dashboard functionality without ES6 modules
+        const sampleData = [
+            {empleado_id: 'EMP_00001', departamento: 'Tecnología', nivel_educacion: 'Maestría', zona_geografica: 'Centro', modalidad_trabajo: 'Híbrido', edad: 32, salario_anual: 128025, satisfaccion_laboral: 5.4, productividad_score: 100, nivel_estres: 5.4},
+            {empleado_id: 'EMP_00002', departamento: 'Legal', nivel_educacion: 'Licenciatura', zona_geografica: 'Sureste', modalidad_trabajo: 'Híbrido', edad: 34, salario_anual: 63983, satisfaccion_laboral: 8.4, productividad_score: 94, nivel_estres: 7.3},
+            {empleado_id: 'EMP_00003', departamento: 'Diseño', nivel_educacion: 'Doctorado', zona_geografica: 'Centro', modalidad_trabajo: 'Híbrido', edad: 41, salario_anual: 143828, satisfaccion_laboral: 10.0, productividad_score: 100, nivel_estres: 3.9},
+            {empleado_id: 'EMP_00004', departamento: 'Operaciones', nivel_educacion: 'Maestría', zona_geografica: 'Norte', modalidad_trabajo: 'Presencial', edad: 29, salario_anual: 55247, satisfaccion_laboral: 7.5, productividad_score: 100, nivel_estres: 5.3},
+            {empleado_id: 'EMP_00005', departamento: 'Marketing', nivel_educacion: 'Licenciatura', zona_geografica: 'Occidente', modalidad_trabajo: 'Remoto', edad: 27, salario_anual: 75000, satisfaccion_laboral: 8.7, productividad_score: 88, nivel_estres: 4.2}
+        ];
+
+        // Initialize charts with sample data
+        function initializeCharts() {
+            // Salary Chart
+            const salaryCtx = document.getElementById('salaryChart').getContext('2d');
+            new Chart(salaryCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Tecnología', 'Legal', 'Diseño', 'Operaciones', 'Marketing'],
+                    datasets: [{
+                        label: 'Average Salary',
+                        data: [128025, 63983, 143828, 55247, 75000],
+                        backgroundColor: ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Scatter Chart
+            const scatterCtx = document.getElementById('scatterChart').getContext('2d');
+            new Chart(scatterCtx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Employees',
+                        data: sampleData.map(emp => ({
+                            x: emp.satisfaccion_laboral,
+                            y: emp.productividad_score
+                        })),
+                        backgroundColor: 'rgba(102, 126, 234, 0.6)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { title: { display: true, text: 'Job Satisfaction' } },
+                        y: { title: { display: true, text: 'Productivity Score' } }
+                    }
+                }
+            });
+
+            // Geographic Chart
+            const geoCtx = document.getElementById('geoChart').getContext('2d');
+            new Chart(geoCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Centro', 'Norte', 'Sureste', 'Occidente'],
+                    datasets: [{
+                        data: [2, 1, 1, 1],
+                        backgroundColor: ['#FFB3BA', '#BAFFC9', '#BAE1FF', '#FFDFBA']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%'
+                }
+            });
+
+            // Work Modality Chart
+            const modalityCtx = document.getElementById('modalityChart').getContext('2d');
+            new Chart(modalityCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Híbrido', 'Presencial', 'Remoto'],
+                    datasets: [
+                        {
+                            label: 'Satisfaction',
+                            data: [7.9, 7.5, 8.7],
+                            backgroundColor: '#BAFFC9'
+                        },
+                        {
+                            label: 'Productivity',
+                            data: [98, 100, 88],
+                            backgroundColor: '#BAE1FF'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            // Work-Life Balance Chart
+            const workLifeCtx = document.getElementById('workLifeChart').getContext('2d');
+            new Chart(workLifeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Tecnología', 'Legal', 'Diseño', 'Operaciones', 'Marketing'],
+                    datasets: [
+                        {
+                            label: 'Weekly Hours',
+                            data: [42, 46, 41, 43, 40],
+                            backgroundColor: '#FFB3BA'
+                        },
+                        {
+                            label: 'Exercise Hours',
+                            data: [2, 8, 24, 13, 5],
+                            backgroundColor: '#BAFFC9'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+
+            // Age Distribution Chart
+            const ageCtx = document.getElementById('ageChart').getContext('2d');
+            new Chart(ageCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['25-34', '35-44'],
+                    datasets: [{
+                        data: [4, 1],
+                        backgroundColor: ['#FFB3BA', '#BAFFC9']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Education Chart
+            const educationCtx = document.getElementById('educationChart').getContext('2d');
+            new Chart(educationCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Licenciatura', 'Maestría', 'Doctorado'],
+                    datasets: [{
+                        label: 'Average Salary',
+                        data: [69491, 91636, 143828],
+                        backgroundColor: '#FFDFBA'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Stress Chart
+            const stressCtx = document.getElementById('stressChart').getContext('2d');
+            new Chart(stressCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Tecnología', 'Legal', 'Diseño', 'Operaciones', 'Marketing'],
+                    datasets: [{
+                        label: 'Stress Level',
+                        data: [5.4, 7.3, 3.9, 5.3, 4.2],
+                        backgroundColor: '#FFB3BA'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: { beginAtZero: true, max: 10 }
+                    }
+                }
+            });
+        }
+
+        // File upload functionality
+        document.getElementById('csvFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('fileStatus').textContent = `Selected: ${file.name}`;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const csv = e.target.result;
+                    const parsed = Papa.parse(csv, { header: true, dynamicTyping: true });
+                    console.log('CSV loaded:', parsed.data);
+                    // Here you would update the charts with real data
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+        });
+
+        // Filter functionality
+        document.getElementById('resetFilters').addEventListener('click', function() {
+            document.getElementById('departmentFilter').value = '';
+            document.getElementById('zoneFilter').value = '';
+            document.getElementById('modalityFilter').value = '';
+            document.getElementById('educationFilter').value = '';
+        });
+    </script>
 </body>
 </html>
