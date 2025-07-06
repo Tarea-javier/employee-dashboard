@@ -1,9 +1,9 @@
 // Employee Analytics Dashboard - Simple Version
-console.log('📦 Main script starting...');
+console.log('Main script starting...');
 
 class EmployeeDashboard {
     constructor() {
-        console.log('🏗️ Creating dashboard...');
+        console.log('Creating dashboard...');
         this.data = [];
         this.charts = {};
         
@@ -11,113 +11,80 @@ class EmployeeDashboard {
     }
 
     init() {
-        console.log('🚀 Initializing dashboard...');
+        console.log('Initializing dashboard...');
         
-        // Esta comprobación sigue siendo una buena práctica
         if (typeof Chart === 'undefined') {
-            console.error('❌ Chart.js not available in main.js');
+            console.error('Chart.js not available in main.js');
             document.getElementById('dashboard').innerHTML = '<p style="text-align:center; color:red;">Error: No se pudo cargar la librería de gráficos.</p>';
             return;
         }
         
-        console.log('✅ Chart.js is available!');
+        console.log('Chart.js is available!');
         
-        this.setupEvents();
-        this.generateData();
-        this.updateMetrics();
-        this.createCharts();
+        this.loadInitialData();
     }
 
-    setupEvents() {
-        const fileInput = document.getElementById('csvFile');
-        const fileStatus = document.getElementById('fileStatus');
-
-        if (fileInput) {
-            fileInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    fileStatus.textContent = file.name;
-                    this.loadCSV(file);
-                }
-            });
-        }
-    }
-
-    generateData() {
-        console.log('🎲 Generating sample data...');
-        
-        const departments = ['Tech', 'Legal', 'Design', 'Ops', 'Marketing'];
-        const zones = ['North', 'South', 'Center', 'East', 'West'];
-        
-        this.data = [];
-        for (let i = 0; i < 50; i++) {
-            this.data.push({
-                id: `EMP_${i + 1}`,
-                department: departments[Math.floor(Math.random() * departments.length)],
-                zone: zones[Math.floor(Math.random() * zones.length)],
-                age: Math.floor(Math.random() * 40) + 25,
-                salary: Math.floor(Math.random() * 100000) + 50000,
-                satisfaction: Math.round((Math.random() * 10) * 10) / 10,
-                productivity: Math.floor(Math.random() * 50) + 50
-            });
-        }
-        
-        console.log(`✅ Generated ${this.data.length} employees`);
-    }
-
-    async loadCSV(file) {
-        console.log('📄 Loading CSV...');
-        
+    async loadInitialData() {
+        console.log('Loading initial data from data/work.csv...');
         try {
-            const text = await file.text();
-            const lines = text.split('\n').filter(line => line.trim());
-            
-            if (lines.length < 2) {
-                console.error('❌ Invalid CSV file');
-                return;
+            // La ruta es relativa a index.html
+            const response = await fetch('data/work.csv');
+            if (!response.ok) {
+                throw new Error(`Network response was not ok: ${response.statusText}`);
             }
+            const csvText = await response.text();
+            this.processCSVData(csvText);
             
-            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-            console.log('📋 Headers:', headers);
+        } catch (error) {
+            console.error('Error loading initial CSV:', error);
+            const dashboard = document.getElementById('dashboard');
+            dashboard.innerHTML = `<p style="text-align:center; color:red;">Error: No se pudo cargar el archivo de datos (work.csv). Verifica que el archivo exista en la carpeta 'data'.</p>`;
+        }
+    }
+
+    processCSVData(csvText) {
+        console.log('Processing CSV data...');
+        try {
+            const lines = csvText.split('\n').filter(line => line.trim());
+            if (lines.length < 2) throw new Error('Invalid CSV file: Not enough lines.');
             
-            // Simple column detection
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+            console.log('Headers:', headers);
+
             const cols = {
-                id: this.findColumn(headers, ['empleado_id', 'id']),
                 dept: this.findColumn(headers, ['departamento', 'department']),
-                zone: this.findColumn(headers, ['zona_geografica', 'zone']),
-                age: this.findColumn(headers, ['edad', 'age']),
                 salary: this.findColumn(headers, ['salario_anual', 'salary']),
                 satisfaction: this.findColumn(headers, ['satisfaccion_laboral', 'satisfaction']),
-                productivity: this.findColumn(headers, ['productividad_score', 'productivity'])
+                productivity: this.findColumn(headers, ['productividad_score', 'productivity']),
+                zone: this.findColumn(headers, ['zona_geografica', 'zone']),
+                age: this.findColumn(headers, ['edad', 'age']),
             };
-            
-            // Parse data
+
             const newData = [];
             for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split(',').map(v => v.trim());
-                
-                if (values.length > 5) {
+                const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+                if (values.length >= headers.length) {
                     newData.push({
-                        id: values[cols.id] || `EMP_${i}`,
                         department: values[cols.dept] || 'Unknown',
+                        salary: parseInt(values[cols.salary]) || 0,
+                        satisfaction: parseFloat(values[cols.satisfaction]) || 0,
+                        productivity: parseInt(values[cols.productivity]) || 0,
                         zone: values[cols.zone] || 'Unknown',
-                        age: parseInt(values[cols.age]) || 30,
-                        salary: parseInt(values[cols.salary]) || 50000,
-                        satisfaction: parseFloat(values[cols.satisfaction]) || 5,
-                        productivity: parseInt(values[cols.productivity]) || 75
+                        age: parseInt(values[cols.age]) || 0,
                     });
                 }
             }
-            
+
             if (newData.length > 0) {
-                this.data = newData.filter(emp => emp.department !== 'Unknown');
-                console.log(`✅ Loaded ${this.data.length} employees from CSV`);
+                this.data = newData.filter(emp => emp.department !== 'Unknown' && emp.salary > 0);
+                console.log(`Processed ${this.data.length} employees`);
                 this.updateMetrics();
                 this.updateCharts();
+            } else {
+                throw new Error('No valid data found in CSV.');
             }
-            
         } catch (error) {
-            console.error('❌ CSV loading error:', error);
+            console.error('CSV processing error:', error);
         }
     }
 
@@ -126,7 +93,8 @@ class EmployeeDashboard {
             const index = headers.indexOf(poss);
             if (index !== -1) return index;
         }
-        return 0; // Default to first column
+        console.warn(`Could not find a column for: ${possibilities.join(' or ')}`);
+        return -1; // Devolver -1 si no se encuentra
     }
 
     updateMetrics() {
@@ -142,7 +110,7 @@ class EmployeeDashboard {
         this.updateElement('avgSatisfaction', avgSatisfaction.toFixed(1));
         this.updateElement('avgProductivity', avgProductivity);
         
-        console.log('📊 Metrics updated');
+        console.log('Metrics updated');
     }
 
     updateElement(id, value) {
@@ -151,10 +119,10 @@ class EmployeeDashboard {
     }
 
     createCharts() {
-        console.log('📈 Creating charts...');
+        console.log('Creating charts...');
         
         if (typeof Chart === 'undefined') {
-            console.error('❌ Chart.js not available for chart creation');
+            console.error('Chart.js not available for chart creation');
             return;
         }
         
@@ -163,20 +131,17 @@ class EmployeeDashboard {
             this.createScatterChart();
             this.createGeoChart();
             this.createAgeChart();
-            console.log('🎉 All charts created!');
+            console.log('All charts created!');
         } catch (error) {
-            console.error('❌ Chart creation error:', error);
+            console.error('Chart creation error:', error);
         }
     }
 
     updateCharts() {
-        // Destroy existing charts
         Object.values(this.charts).forEach(chart => {
             if (chart && chart.destroy) chart.destroy();
         });
         this.charts = {};
-        
-        // Recreate charts
         this.createCharts();
     }
 
@@ -193,7 +158,7 @@ class EmployeeDashboard {
             deptSalaries[emp.department].count++;
         });
 
-        const labels = Object.keys(deptSalaries);
+        const labels = Object.keys(deptSalaries).sort((a,b) => a.localeCompare(b));
         const data = labels.map(dept => Math.round(deptSalaries[dept].total / deptSalaries[dept].count));
 
         this.charts.salary = new Chart(canvas, {
@@ -212,7 +177,7 @@ class EmployeeDashboard {
                 plugins: { legend: { display: false } },
                 scales: {
                     y: {
-                        beginAtZero: true,
+                        beginAtZero: false,
                         ticks: { callback: value => '$' + value.toLocaleString() }
                     }
                 }
@@ -234,7 +199,9 @@ class EmployeeDashboard {
             data: {
                 datasets: [{
                     data: scatterData,
-                    backgroundColor: '#ea4335'
+                    backgroundColor: '#ea4335',
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
                 }]
             },
             options: {
@@ -305,8 +272,7 @@ class EmployeeDashboard {
     }
 }
 
-// **CAMBIO CLAVE**: Se ejecuta el código solo cuando el DOM está completamente cargado.
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🌟 DOM ready, creating dashboard...');
+    console.log('DOM ready, creating dashboard...');
     window.employeeDashboard = new EmployeeDashboard();
 });
