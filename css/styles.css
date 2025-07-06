@@ -12,6 +12,7 @@
     --background-main: #f8f9fa;
     --background-card: #ffffff;
     --border-color: #dee2e6;
+    --danger-red: #e74c3c;
 
     --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.05);
     --shadow-medium: 0 5px 15px rgba(0, 0, 0, 0.08);
@@ -82,6 +83,66 @@ body {
     text-transform: uppercase;
     letter-spacing: 1px;
 }
+
+/* --- ESTILOS PARA FILTROS (NUEVO) --- */
+.filters {
+    background: var(--background-card);
+    padding: 16px var(--spacing-md);
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    margin-bottom: var(--spacing-lg);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.filter-group label {
+    font-weight: 500;
+    color: var(--text-dark);
+    font-size: 0.95rem;
+}
+
+.filter-group select {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: #fff;
+    font-size: 0.95rem;
+    min-width: 180px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.filter-group select:hover {
+    border-color: var(--primary-blue);
+}
+
+.reset-button {
+    margin-left: auto; /* Empuja el botón a la derecha */
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--danger-red);
+    background-color: transparent;
+    border: 1px solid var(--danger-red);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.reset-button:hover {
+    background-color: var(--danger-red);
+    color: #fff;
+}
+
+/* --- FIN ESTILOS PARA FILTROS --- */
 
 /* CORREGIDO: Layout de 2 columnas para pantallas grandes */
 .charts-grid {
