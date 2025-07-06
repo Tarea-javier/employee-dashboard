@@ -14,11 +14,9 @@
             <h1>Employee Analytics</h1>
             <p>Simple data visualization for employee metrics</p>
             
-            <div class="upload-section">
-                <input type="file" id="csvFile" accept=".csv" class="file-input">
-                <label for="csvFile" class="file-label">Upload CSV</label>
-                <span class="file-status" id="fileStatus">No file selected</span>
-            </div>
+            <!-- La sección de subida de archivos fue eliminada -->
+            <!-- Los datos se cargan automáticamente desde el repositorio -->
+
         </header>
 
         <!-- Loading -->
@@ -29,19 +27,19 @@
             <!-- Metrics -->
             <section class="metrics">
                 <div class="metric-card">
-                    <div class="metric-value" id="totalEmployees">50</div>
+                    <div class="metric-value" id="totalEmployees">--</div>
                     <div class="metric-label">Total Employees</div>
                 </div>
                 <div class="metric-card">
-                    <div class="metric-value" id="avgSalary">$85,250</div>
+                    <div class="metric-value" id="avgSalary">--</div>
                     <div class="metric-label">Average Salary</div>
                 </div>
                 <div class="metric-card">
-                    <div class="metric-value" id="avgSatisfaction">7.8</div>
+                    <div class="metric-value" id="avgSatisfaction">--</div>
                     <div class="metric-label">Job Satisfaction</div>
                 </div>
                 <div class="metric-card">
-                    <div class="metric-value" id="avgProductivity">89</div>
+                    <div class="metric-value" id="avgProductivity">--</div>
                     <div class="metric-label">Productivity</div>
                 </div>
             </section>
@@ -80,10 +78,9 @@
     </div>
 
     <!-- Scripts: Cargar dependencias PRIMERO, luego nuestro código -->
-    <!-- Se carga Chart.js desde el CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
     
-    <!-- Se carga nuestro script principal DESPUÉS de Chart.js -->
+    <!-- Carga tu script principal -->
     <script src="js/main.js"></script>
 </body>
 </html>
