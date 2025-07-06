@@ -13,9 +13,10 @@ class EmployeeDashboard {
     init() {
         console.log('🚀 Initializing dashboard...');
         
-        // Check if Chart.js is available
+        // Esta comprobación sigue siendo una buena práctica
         if (typeof Chart === 'undefined') {
             console.error('❌ Chart.js not available in main.js');
+            document.getElementById('dashboard').innerHTML = '<p style="text-align:center; color:red;">Error: No se pudo cargar la librería de gráficos.</p>';
             return;
         }
         
@@ -183,7 +184,6 @@ class EmployeeDashboard {
         const canvas = document.getElementById('salaryChart');
         if (!canvas) return;
 
-        // Group by department
         const deptSalaries = {};
         this.data.forEach(emp => {
             if (!deptSalaries[emp.department]) {
@@ -305,6 +305,8 @@ class EmployeeDashboard {
     }
 }
 
-// Initialize when script loads
-console.log('🌟 Script loaded, creating dashboard...');
-window.employeeDashboard = new EmployeeDashboard();
+// **CAMBIO CLAVE**: Se ejecuta el código solo cuando el DOM está completamente cargado.
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🌟 DOM ready, creating dashboard...');
+    window.employeeDashboard = new EmployeeDashboard();
+});
