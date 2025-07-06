@@ -16,7 +16,7 @@ class EmployeeDashboard {
 
     init() {
         this.setupEventListeners();
-        this.showDashboard(false);
+        this.loadSampleData();
     }
 
     setupEventListeners() {
@@ -44,9 +44,6 @@ class EmployeeDashboard {
         document.getElementById('resetFilters').addEventListener('click', () => {
             this.resetFilters();
         });
-
-        // Try to load sample data if no file is uploaded
-        this.loadSampleData();
     }
 
     async loadCSVFile(file) {
@@ -91,7 +88,7 @@ class EmployeeDashboard {
 
     loadSampleData() {
         // Generate sample data based on the CSV structure
-        const sampleData = this.generateSampleData(100);
+        const sampleData = this.generateSampleData(50);
         this.data = sampleData;
         this.filteredData = [...this.data];
         
@@ -283,14 +280,6 @@ class EmployeeDashboard {
 }
 
 // Utility functions
-const formatCurrency = (value) => {
-    return new Intl.NumberFormat('es-MX', {
-        style: 'currency',
-        currency: 'MXN',
-        minimumFractionDigits: 0
-    }).format(value);
-};
-
 const groupBy = (array, key) => {
     return array.reduce((result, item) => {
         const group = item[key];
