@@ -70,7 +70,7 @@ const pastelColors = {
  */
 function createSalaryChart(data) {
     const ctx = document.getElementById('salaryChart').getContext('2d');
-    const chartData = DataProcessor.prepareChartData(data, 'salary_by_department');
+    const chartData = prepareChartData(data, 'salary_by_department');
     
     return new Chart(ctx, {
         type: 'bar',
@@ -110,7 +110,7 @@ function createSalaryChart(data) {
  */
 function createScatterChart(data) {
     const ctx = document.getElementById('scatterChart').getContext('2d');
-    const chartData = DataProcessor.prepareChartData(data, 'satisfaction_productivity');
+    const chartData = prepareChartData(data, 'satisfaction_productivity');
     
     return new Chart(ctx, {
         type: 'scatter',
@@ -149,7 +149,7 @@ function createScatterChart(data) {
                             return [
                                 `Satisfaction: ${point.x}`,
                                 `Productivity: ${point.y}`,
-                                `Department: ${context.raw.department}`
+                                `Department: ${context.raw.department || 'N/A'}`
                             ];
                         }
                     }
@@ -164,7 +164,7 @@ function createScatterChart(data) {
  */
 function createGeoChart(data) {
     const ctx = document.getElementById('geoChart').getContext('2d');
-    const chartData = DataProcessor.prepareChartData(data, 'geographic_distribution');
+    const chartData = prepareChartData(data, 'geographic_distribution');
     
     return new Chart(ctx, {
         type: 'doughnut',
@@ -194,7 +194,7 @@ function createGeoChart(data) {
  */
 function createModalityChart(data) {
     const ctx = document.getElementById('modalityChart').getContext('2d');
-    const chartData = DataProcessor.prepareChartData(data, 'work_modality');
+    const chartData = prepareChartData(data, 'work_modality');
     
     return new Chart(ctx, {
         type: 'bar',
@@ -229,7 +229,7 @@ function createModalityChart(data) {
  */
 function createWorkLifeChart(data) {
     const ctx = document.getElementById('workLifeChart').getContext('2d');
-    const chartData = DataProcessor.prepareChartData(data, 'work_life_balance');
+    const chartData = prepareChartData(data, 'work_life_balance');
     
     return new Chart(ctx, {
         type: 'bar',
@@ -263,7 +263,7 @@ function createWorkLifeChart(data) {
  */
 function createAgeChart(data) {
     const ctx = document.getElementById('ageChart').getContext('2d');
-    const chartData = DataProcessor.prepareChartData(data, 'age_distribution');
+    const chartData = prepareChartData(data, 'age_distribution');
     
     return new Chart(ctx, {
         type: 'pie',
@@ -292,7 +292,7 @@ function createAgeChart(data) {
  */
 function createEducationChart(data) {
     const ctx = document.getElementById('educationChart').getContext('2d');
-    const chartData = DataProcessor.prepareChartData(data, 'education_impact');
+    const chartData = prepareChartData(data, 'education_impact');
     
     return new Chart(ctx, {
         type: 'bar',
@@ -313,22 +313,6 @@ function createEducationChart(data) {
                             return '$' + value.toLocaleString();
                         }
                     }
-                },
-                y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    min: 0,
-                    max: 10,
-                    grid: {
-                        drawOnChartArea: false,
-                    },
-                    ticks: {
-                        color: '#718096',
-                        font: {
-                            size: 11
-                        }
-                    }
                 }
             },
             plugins: {
@@ -337,11 +321,7 @@ function createEducationChart(data) {
                     ...defaultChartOptions.plugins.tooltip,
                     callbacks: {
                         label: function(context) {
-                            if (context.datasetIndex === 0) {
-                                return `Average Salary: $${context.parsed.y.toLocaleString()}`;
-                            } else {
-                                return `Job Satisfaction: ${context.parsed.y}`;
-                            }
+                            return `Average Salary: $${context.parsed.y.toLocaleString()}`;
                         }
                     }
                 }
@@ -355,7 +335,7 @@ function createEducationChart(data) {
  */
 function createStressChart(data) {
     const ctx = document.getElementById('stressChart').getContext('2d');
-    const chartData = DataProcessor.prepareChartData(data, 'stress_analysis');
+    const chartData = prepareChartData(data, 'stress_analysis');
     
     return new Chart(ctx, {
         type: 'bar',
@@ -387,106 +367,231 @@ function createStressChart(data) {
 }
 
 /**
- * Create animated line chart
+ * Prepare chart data for different chart types
  */
-function createAnimatedLineChart(ctx, data, options = {}) {
-    return new Chart(ctx, {
-        type: 'line',
-        data: data,
-        options: {
-            ...defaultChartOptions,
-            ...options,
-            animation: {
-                duration: 2000,
-                easing: 'easeInOutQuart'
-            },
-            elements: {
-                line: {
-                    tension: 0.4
-                },
-                point: {
-                    radius: 6,
-                    hoverRadius: 8
-                }
-            }
-        }
-    });
-}
-
-/**
- * Create gradient background for charts
- */
-function createGradient(ctx, color1, color2) {
-    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-    gradient.addColorStop(0, color1);
-    gradient.addColorStop(1, color2);
-    return gradient;
-}
-
-/**
- * Update chart with new data and smooth animation
- */
-function updateChartData(chart, newData) {
-    chart.data = newData;
-    chart.update('active');
-}
-
-/**
- * Create multi-axis chart for complex comparisons
- */
-function createMultiAxisChart(ctx, data, config) {
-    return new Chart(ctx, {
-        type: 'line',
-        data: data,
-        options: {
-            ...defaultChartOptions,
-            ...config,
-            interaction: {
-                mode: 'index',
-                intersect: false,
-            },
-            animation: {
-                duration: 1500,
-                easing: 'easeInOutCubic'
-            }
-        }
-    });
-}
-
-/**
- * Chart utility functions
- */
-const ChartUtils = {
-    // Destroy chart if it exists
-    destroyChart: function(chart) {
-        if (chart && typeof chart.destroy === 'function') {
-            chart.destroy();
-        }
-    },
-
-    // Get responsive font size based on screen width
-    getResponsiveFontSize: function() {
-        const width = window.innerWidth;
-        if (width < 480) return 10;
-        if (width < 768) return 11;
-        return 12;
-    },
-
-    // Generate random pastel color
-    generatePastelColor: function() {
-        const colors = pastelColors.primary;
-        return colors[Math.floor(Math.random() * colors.length)];
-    },
-
-    // Create color array for datasets
-    createColorArray: function(count) {
-        const colors = [];
-        for (let i = 0; i < count; i++) {
-            colors.push(pastelColors.primary[i % pastelColors.primary.length]);
-        }
-        return colors;
+function prepareChartData(data, chartType) {
+    switch (chartType) {
+        case 'salary_by_department':
+            return prepareSalaryByDepartment(data);
+        case 'satisfaction_productivity':
+            return prepareSatisfactionProductivity(data);
+        case 'geographic_distribution':
+            return prepareGeographicDistribution(data);
+        case 'work_modality':
+            return prepareWorkModality(data);
+        case 'age_distribution':
+            return prepareAgeDistribution(data);
+        case 'education_impact':
+            return prepareEducationImpact(data);
+        case 'stress_analysis':
+            return prepareStressAnalysis(data);
+        case 'work_life_balance':
+            return prepareWorkLifeBalance(data);
+        default:
+            return {};
     }
-};
+}
 
-// Make ChartUtils available globally
-window.ChartUtils = ChartUtils;
+function prepareSalaryByDepartment(data) {
+    const grouped = groupByField(data, 'departamento');
+    const labels = Object.keys(grouped);
+    const salaries = labels.map(dept => {
+        const deptData = grouped[dept];
+        return Math.round(deptData.reduce((sum, emp) => sum + emp.salario_anual, 0) / deptData.length);
+    });
+
+    return {
+        labels: labels,
+        datasets: [{
+            label: 'Average Salary',
+            data: salaries,
+            backgroundColor: pastelColors.primary.slice(0, labels.length)
+        }]
+    };
+}
+
+function prepareSatisfactionProductivity(data) {
+    return {
+        datasets: [{
+            label: 'Employees',
+            data: data.map(emp => ({
+                x: emp.satisfaccion_laboral,
+                y: emp.productividad_score,
+                department: emp.departamento
+            })),
+            backgroundColor: 'rgba(102, 126, 234, 0.6)',
+            borderColor: 'rgba(102, 126, 234, 1)'
+        }]
+    };
+}
+
+function prepareGeographicDistribution(data) {
+    const grouped = groupByField(data, 'zona_geografica');
+    
+    return {
+        labels: Object.keys(grouped),
+        datasets: [{
+            data: Object.values(grouped).map(zone => zone.length),
+            backgroundColor: pastelColors.primary.slice(0, Object.keys(grouped).length)
+        }]
+    };
+}
+
+function prepareWorkModality(data) {
+    const grouped = groupByField(data, 'modalidad_trabajo');
+    const labels = Object.keys(grouped);
+    
+    const satisfactionData = labels.map(modality => {
+        const modalityData = grouped[modality];
+        return (modalityData.reduce((sum, emp) => sum + emp.satisfaccion_laboral, 0) / modalityData.length).toFixed(1);
+    });
+    
+    const productivityData = labels.map(modality => {
+        const modalityData = grouped[modality];
+        return (modalityData.reduce((sum, emp) => sum + emp.productividad_score, 0) / modalityData.length).toFixed(1);
+    });
+
+    return {
+        labels: labels,
+        datasets: [
+            {
+                label: 'Job Satisfaction',
+                data: satisfactionData,
+                backgroundColor: '#BAFFC9'
+            },
+            {
+                label: 'Productivity Score',
+                data: productivityData,
+                backgroundColor: '#BAE1FF'
+            }
+        ]
+    };
+}
+
+function prepareAgeDistribution(data) {
+    const ageGroups = ['< 25', '25-34', '35-44', '45-54', '55+'];
+    const distribution = {};
+    
+    ageGroups.forEach(group => distribution[group] = 0);
+    
+    data.forEach(emp => {
+        const age = emp.edad;
+        let group;
+        if (age < 25) group = '< 25';
+        else if (age < 35) group = '25-34';
+        else if (age < 45) group = '35-44';
+        else if (age < 55) group = '45-54';
+        else group = '55+';
+        
+        distribution[group]++;
+    });
+
+    return {
+        labels: ageGroups,
+        datasets: [{
+            data: Object.values(distribution),
+            backgroundColor: pastelColors.primary.slice(0, ageGroups.length)
+        }]
+    };
+}
+
+function prepareEducationImpact(data) {
+    const grouped = groupByField(data, 'nivel_educacion');
+    const labels = Object.keys(grouped);
+    
+    const salaryData = labels.map(edu => {
+        const eduData = grouped[edu];
+        return Math.round(eduData.reduce((sum, emp) => sum + emp.salario_anual, 0) / eduData.length);
+    });
+
+    return {
+        labels: labels,
+        datasets: [{
+            label: 'Average Salary',
+            data: salaryData,
+            backgroundColor: '#FFDFBA'
+        }]
+    };
+}
+
+function prepareStressAnalysis(data) {
+    const grouped = groupByField(data, 'departamento');
+    const labels = Object.keys(grouped);
+    
+    const stressData = labels.map(dept => {
+        const deptData = grouped[dept];
+        return (deptData.reduce((sum, emp) => sum + emp.nivel_estres, 0) / deptData.length).toFixed(1);
+    });
+
+    return {
+        labels: labels,
+        datasets: [{
+            label: 'Average Stress Level',
+            data: stressData,
+            backgroundColor: '#FFB3BA'
+        }]
+    };
+}
+
+function prepareWorkLifeBalance(data) {
+    const grouped = groupByField(data, 'departamento');
+    const labels = Object.keys(grouped);
+    
+    const weeklyHours = labels.map(dept => {
+        const deptData = grouped[dept];
+        return (deptData.reduce((sum, emp) => sum + emp.horas_semanales, 0) / deptData.length).toFixed(1);
+    });
+    
+    const exerciseHours = labels.map(dept => {
+        const deptData = grouped[dept];
+        return (deptData.reduce((sum, emp) => sum + emp.horas_ejercicio_semana, 0) / deptData.length).toFixed(1);
+    });
+    
+    const sleepHours = labels.map(dept => {
+        const deptData = grouped[dept];
+        return (deptData.reduce((sum, emp) => sum + emp.horas_sueno_noche, 0) / deptData.length).toFixed(1);
+    });
+
+    return {
+        labels: labels,
+        datasets: [
+            {
+                label: 'Weekly Hours',
+                data: weeklyHours,
+                backgroundColor: '#FFB3BA'
+            },
+            {
+                label: 'Exercise Hours/Week',
+                data: exerciseHours,
+                backgroundColor: '#BAFFC9'
+            },
+            {
+                label: 'Sleep Hours/Night',
+                data: sleepHours,
+                backgroundColor: '#BAE1FF'
+            }
+        ]
+    };
+}
+
+// Utility function to group data by field
+function groupByField(array, key) {
+    return array.reduce((result, item) => {
+        const group = item[key];
+        if (!result[group]) {
+            result[group] = [];
+        }
+        result[group].push(item);
+        return result;
+    }, {});
+}
+
+// Make functions available globally
+window.createSalaryChart = createSalaryChart;
+window.createScatterChart = createScatterChart;
+window.createGeoChart = createGeoChart;
+window.createModalityChart = createModalityChart;
+window.createWorkLifeChart = createWorkLifeChart;
+window.createAgeChart = createAgeChart;
+window.createEducationChart = createEducationChart;
+window.createStressChart = createStressChart;
