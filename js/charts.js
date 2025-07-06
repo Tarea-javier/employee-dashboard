@@ -1,158 +1,111 @@
-// Chart.js configurations and chart creation functions
+// Simple chart creation functions - NO IMPORTS
 
-// Default chart options with pastel styling
-const defaultChartOptions = {
+console.log('📊 Loading charts.js...');
+
+// Pastel color palette
+const pastelColors = ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF', '#E0BBFF', '#F0E6FF', '#E6FFF9'];
+
+// Basic chart options
+const defaultOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
         legend: {
             position: 'top',
             labels: {
-                usePointStyle: true,
-                padding: 20,
-                font: {
-                    size: 12,
-                    family: 'Segoe UI'
-                }
-            }
-        },
-        tooltip: {
-            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-            titleColor: '#4a5568',
-            bodyColor: '#718096',
-            borderColor: '#e2e8f0',
-            borderWidth: 1,
-            cornerRadius: 8,
-            padding: 12
-        }
-    },
-    scales: {
-        x: {
-            grid: {
-                color: '#f7fafc',
-                borderColor: '#e2e8f0'
-            },
-            ticks: {
-                color: '#718096',
-                font: {
-                    size: 11
-                }
-            }
-        },
-        y: {
-            grid: {
-                color: '#f7fafc',
-                borderColor: '#e2e8f0'
-            },
-            ticks: {
-                color: '#718096',
-                font: {
-                    size: 11
-                }
+                font: { size: 12 }
             }
         }
     }
 };
 
-// Pastel color palette
-const pastelColors = {
-    primary: ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF', '#E0BBFF', '#F0E6FF', '#E6FFF9'],
-    gradients: [
-        'linear-gradient(45deg, #FFB3BA, #FFDFBA)',
-        'linear-gradient(45deg, #BAFFC9, #BAE1FF)',
-        'linear-gradient(45deg, #E0BBFF, #F0E6FF)',
-        'linear-gradient(45deg, #FFFFBA, #BAFFC9)'
-    ]
-};
-
 /**
- * Create salary distribution chart by department
+ * Create salary chart by department
  */
 function createSalaryChart(data) {
-    const ctx = document.getElementById('salaryChart').getContext('2d');
-    const chartData = prepareChartData(data, 'salary_by_department');
+    console.log('📊 Creating salary chart with', data.length, 'employees');
     
+    const ctx = document.getElementById('salaryChart');
+    if (!ctx) {
+        console.error('❌ Canvas salaryChart not found');
+        return null;
+    }
+
+    // Group by department and calculate average salary
+    const deptData = {};
+    data.forEach(emp => {
+        if (!deptData[emp.departamento]) {
+            deptData[emp.departamento] = { total: 0, count: 0 };
+        }
+        deptData[emp.departamento].total += emp.salario_anual;
+        deptData[emp.departamento].count += 1;
+    });
+
+    const labels = Object.keys(deptData);
+    const salaries = labels.map(dept => Math.round(deptData[dept].total / deptData[dept].count));
+
     return new Chart(ctx, {
         type: 'bar',
-        data: chartData,
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Average Salary',
+                data: salaries,
+                backgroundColor: pastelColors.slice(0, labels.length)
+            }]
+        },
         options: {
-            ...defaultChartOptions,
+            ...defaultOptions,
             scales: {
-                ...defaultChartOptions.scales,
                 y: {
-                    ...defaultChartOptions.scales.y,
                     beginAtZero: true,
                     ticks: {
-                        ...defaultChartOptions.scales.y.ticks,
                         callback: function(value) {
                             return '$' + value.toLocaleString();
                         }
                     }
                 }
-            },
-            plugins: {
-                ...defaultChartOptions.plugins,
-                tooltip: {
-                    ...defaultChartOptions.plugins.tooltip,
-                    callbacks: {
-                        label: function(context) {
-                            return `Average Salary: $${context.parsed.y.toLocaleString()}`;
-                        }
-                    }
-                }
             }
         }
     });
 }
 
 /**
- * Create scatter plot for satisfaction vs productivity
+ * Create scatter chart for satisfaction vs productivity
  */
 function createScatterChart(data) {
-    const ctx = document.getElementById('scatterChart').getContext('2d');
-    const chartData = prepareChartData(data, 'satisfaction_productivity');
+    console.log('📊 Creating scatter chart with', data.length, 'employees');
     
+    const ctx = document.getElementById('scatterChart');
+    if (!ctx) {
+        console.error('❌ Canvas scatterChart not found');
+        return null;
+    }
+
+    const scatterData = data.map(emp => ({
+        x: emp.satisfaccion_laboral,
+        y: emp.productividad_score
+    }));
+
     return new Chart(ctx, {
         type: 'scatter',
-        data: chartData,
+        data: {
+            datasets: [{
+                label: 'Employees',
+                data: scatterData,
+                backgroundColor: 'rgba(102, 126, 234, 0.6)'
+            }]
+        },
         options: {
-            ...defaultChartOptions,
+            ...defaultOptions,
             scales: {
                 x: {
-                    ...defaultChartOptions.scales.x,
-                    title: {
-                        display: true,
-                        text: 'Job Satisfaction (1-10)',
-                        color: '#4a5568'
-                    },
-                    min: 0,
-                    max: 10
+                    title: { display: true, text: 'Job Satisfaction' },
+                    min: 0, max: 10
                 },
                 y: {
-                    ...defaultChartOptions.scales.y,
-                    title: {
-                        display: true,
-                        text: 'Productivity Score (0-100)',
-                        color: '#4a5568'
-                    },
-                    min: 0,
-                    max: 100
-                }
-            },
-            plugins: {
-                ...defaultChartOptions.plugins,
-                tooltip: {
-                    ...defaultChartOptions.plugins.tooltip,
-                    callbacks: {
-                        label: function(context) {
-                            const point = context.parsed;
-                            return [
-                                `Satisfaction: ${point.x}`,
-                                `Productivity: ${point.y}`,
-                                `Department: ${context.raw.department || 'N/A'}`
-                            ];
-                        }
-                    }
+                    title: { display: true, text: 'Productivity Score' },
+                    min: 0, max: 100
                 }
             }
         }
@@ -160,65 +113,95 @@ function createScatterChart(data) {
 }
 
 /**
- * Create geographic distribution doughnut chart
+ * Create geographic distribution chart
  */
 function createGeoChart(data) {
-    const ctx = document.getElementById('geoChart').getContext('2d');
-    const chartData = prepareChartData(data, 'geographic_distribution');
+    console.log('📊 Creating geo chart with', data.length, 'employees');
     
+    const ctx = document.getElementById('geoChart');
+    if (!ctx) {
+        console.error('❌ Canvas geoChart not found');
+        return null;
+    }
+
+    // Count by zone
+    const zoneData = {};
+    data.forEach(emp => {
+        zoneData[emp.zona_geografica] = (zoneData[emp.zona_geografica] || 0) + 1;
+    });
+
     return new Chart(ctx, {
         type: 'doughnut',
-        data: chartData,
+        data: {
+            labels: Object.keys(zoneData),
+            datasets: [{
+                data: Object.values(zoneData),
+                backgroundColor: pastelColors.slice(0, Object.keys(zoneData).length)
+            }]
+        },
         options: {
-            ...defaultChartOptions,
-            cutout: '60%',
-            plugins: {
-                ...defaultChartOptions.plugins,
-                tooltip: {
-                    ...defaultChartOptions.plugins.tooltip,
-                    callbacks: {
-                        label: function(context) {
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = ((context.parsed / total) * 100).toFixed(1);
-                            return `${context.label}: ${context.parsed} (${percentage}%)`;
-                        }
-                    }
-                }
-            }
+            ...defaultOptions,
+            cutout: '60%'
         }
     });
 }
 
 /**
- * Create work modality comparison chart
+ * Create work modality chart
  */
 function createModalityChart(data) {
-    const ctx = document.getElementById('modalityChart').getContext('2d');
-    const chartData = prepareChartData(data, 'work_modality');
+    console.log('📊 Creating modality chart with', data.length, 'employees');
     
+    const ctx = document.getElementById('modalityChart');
+    if (!ctx) {
+        console.error('❌ Canvas modalityChart not found');
+        return null;
+    }
+
+    // Group by modality
+    const modalityData = {};
+    data.forEach(emp => {
+        if (!modalityData[emp.modalidad_trabajo]) {
+            modalityData[emp.modalidad_trabajo] = {
+                satisfaction: 0,
+                productivity: 0,
+                count: 0
+            };
+        }
+        modalityData[emp.modalidad_trabajo].satisfaction += emp.satisfaccion_laboral;
+        modalityData[emp.modalidad_trabajo].productivity += emp.productividad_score;
+        modalityData[emp.modalidad_trabajo].count += 1;
+    });
+
+    const labels = Object.keys(modalityData);
+    const satisfactionData = labels.map(mod => 
+        (modalityData[mod].satisfaction / modalityData[mod].count).toFixed(1)
+    );
+    const productivityData = labels.map(mod => 
+        (modalityData[mod].productivity / modalityData[mod].count).toFixed(1)
+    );
+
     return new Chart(ctx, {
         type: 'bar',
-        data: chartData,
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Job Satisfaction',
+                    data: satisfactionData,
+                    backgroundColor: '#BAFFC9'
+                },
+                {
+                    label: 'Productivity Score',
+                    data: productivityData,
+                    backgroundColor: '#BAE1FF'
+                }
+            ]
+        },
         options: {
-            ...defaultChartOptions,
+            ...defaultOptions,
             scales: {
-                ...defaultChartOptions.scales,
-                y: {
-                    ...defaultChartOptions.scales.y,
-                    beginAtZero: true,
-                    max: 10
-                }
-            },
-            plugins: {
-                ...defaultChartOptions.plugins,
-                tooltip: {
-                    ...defaultChartOptions.plugins.tooltip,
-                    callbacks: {
-                        label: function(context) {
-                            return `${context.dataset.label}: ${context.parsed.y}`;
-                        }
-                    }
-                }
+                y: { beginAtZero: true, max: 10 }
             }
         }
     });
@@ -228,365 +211,202 @@ function createModalityChart(data) {
  * Create work-life balance chart
  */
 function createWorkLifeChart(data) {
-    const ctx = document.getElementById('workLifeChart').getContext('2d');
-    const chartData = prepareChartData(data, 'work_life_balance');
+    console.log('📊 Creating work-life chart with', data.length, 'employees');
     
+    const ctx = document.getElementById('workLifeChart');
+    if (!ctx) {
+        console.error('❌ Canvas workLifeChart not found');
+        return null;
+    }
+
+    // Group by department
+    const deptData = {};
+    data.forEach(emp => {
+        if (!deptData[emp.departamento]) {
+            deptData[emp.departamento] = {
+                hours: 0,
+                exercise: 0,
+                sleep: 0,
+                count: 0
+            };
+        }
+        deptData[emp.departamento].hours += emp.horas_semanales || 40;
+        deptData[emp.departamento].exercise += emp.horas_ejercicio_semana || 0;
+        deptData[emp.departamento].sleep += emp.horas_sueno_noche || 7;
+        deptData[emp.departamento].count += 1;
+    });
+
+    const labels = Object.keys(deptData);
+    const hoursData = labels.map(dept => (deptData[dept].hours / deptData[dept].count).toFixed(1));
+    const exerciseData = labels.map(dept => (deptData[dept].exercise / deptData[dept].count).toFixed(1));
+    const sleepData = labels.map(dept => (deptData[dept].sleep / deptData[dept].count).toFixed(1));
+
     return new Chart(ctx, {
         type: 'bar',
-        data: chartData,
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Weekly Hours',
+                    data: hoursData,
+                    backgroundColor: '#FFB3BA'
+                },
+                {
+                    label: 'Exercise Hours/Week',
+                    data: exerciseData,
+                    backgroundColor: '#BAFFC9'
+                },
+                {
+                    label: 'Sleep Hours/Night',
+                    data: sleepData,
+                    backgroundColor: '#BAE1FF'
+                }
+            ]
+        },
         options: {
-            ...defaultChartOptions,
+            ...defaultOptions,
             scales: {
-                ...defaultChartOptions.scales,
-                y: {
-                    ...defaultChartOptions.scales.y,
-                    beginAtZero: true
-                }
-            },
-            plugins: {
-                ...defaultChartOptions.plugins,
-                tooltip: {
-                    ...defaultChartOptions.plugins.tooltip,
-                    callbacks: {
-                        label: function(context) {
-                            return `${context.dataset.label}: ${context.parsed.y}`;
-                        }
-                    }
-                }
+                y: { beginAtZero: true }
             }
         }
     });
 }
 
 /**
- * Create age distribution pie chart
+ * Create age distribution chart
  */
 function createAgeChart(data) {
-    const ctx = document.getElementById('ageChart').getContext('2d');
-    const chartData = prepareChartData(data, 'age_distribution');
+    console.log('📊 Creating age chart with', data.length, 'employees');
     
+    const ctx = document.getElementById('ageChart');
+    if (!ctx) {
+        console.error('❌ Canvas ageChart not found');
+        return null;
+    }
+
+    // Group by age ranges
+    const ageGroups = { '< 25': 0, '25-34': 0, '35-44': 0, '45-54': 0, '55+': 0 };
+    
+    data.forEach(emp => {
+        const age = emp.edad;
+        if (age < 25) ageGroups['< 25']++;
+        else if (age < 35) ageGroups['25-34']++;
+        else if (age < 45) ageGroups['35-44']++;
+        else if (age < 55) ageGroups['45-54']++;
+        else ageGroups['55+']++;
+    });
+
     return new Chart(ctx, {
         type: 'pie',
-        data: chartData,
-        options: {
-            ...defaultChartOptions,
-            plugins: {
-                ...defaultChartOptions.plugins,
-                tooltip: {
-                    ...defaultChartOptions.plugins.tooltip,
-                    callbacks: {
-                        label: function(context) {
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = ((context.parsed / total) * 100).toFixed(1);
-                            return `${context.label}: ${context.parsed} (${percentage}%)`;
-                        }
-                    }
-                }
-            }
-        }
+        data: {
+            labels: Object.keys(ageGroups),
+            datasets: [{
+                data: Object.values(ageGroups),
+                backgroundColor: pastelColors.slice(0, 5)
+            }]
+        },
+        options: defaultOptions
     });
 }
 
 /**
- * Create education level impact chart
+ * Create education level chart
  */
 function createEducationChart(data) {
-    const ctx = document.getElementById('educationChart').getContext('2d');
-    const chartData = prepareChartData(data, 'education_impact');
+    console.log('📊 Creating education chart with', data.length, 'employees');
     
+    const ctx = document.getElementById('educationChart');
+    if (!ctx) {
+        console.error('❌ Canvas educationChart not found');
+        return null;
+    }
+
+    // Group by education level
+    const eduData = {};
+    data.forEach(emp => {
+        if (!eduData[emp.nivel_educacion]) {
+            eduData[emp.nivel_educacion] = { total: 0, count: 0 };
+        }
+        eduData[emp.nivel_educacion].total += emp.salario_anual;
+        eduData[emp.nivel_educacion].count += 1;
+    });
+
+    const labels = Object.keys(eduData);
+    const salaries = labels.map(edu => Math.round(eduData[edu].total / eduData[edu].count));
+
     return new Chart(ctx, {
         type: 'bar',
-        data: chartData,
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Average Salary',
+                data: salaries,
+                backgroundColor: '#FFDFBA'
+            }]
+        },
         options: {
-            ...defaultChartOptions,
+            ...defaultOptions,
             scales: {
-                ...defaultChartOptions.scales,
                 y: {
-                    ...defaultChartOptions.scales.y,
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
                     beginAtZero: true,
                     ticks: {
-                        ...defaultChartOptions.scales.y.ticks,
                         callback: function(value) {
                             return '$' + value.toLocaleString();
                         }
                     }
                 }
-            },
-            plugins: {
-                ...defaultChartOptions.plugins,
-                tooltip: {
-                    ...defaultChartOptions.plugins.tooltip,
-                    callbacks: {
-                        label: function(context) {
-                            return `Average Salary: $${context.parsed.y.toLocaleString()}`;
-                        }
-                    }
-                }
             }
         }
     });
 }
 
 /**
- * Create stress level analysis chart
+ * Create stress analysis chart
  */
 function createStressChart(data) {
-    const ctx = document.getElementById('stressChart').getContext('2d');
-    const chartData = prepareChartData(data, 'stress_analysis');
+    console.log('📊 Creating stress chart with', data.length, 'employees');
     
+    const ctx = document.getElementById('stressChart');
+    if (!ctx) {
+        console.error('❌ Canvas stressChart not found');
+        return null;
+    }
+
+    // Group by department and calculate average stress
+    const deptData = {};
+    data.forEach(emp => {
+        if (!deptData[emp.departamento]) {
+            deptData[emp.departamento] = { total: 0, count: 0 };
+        }
+        deptData[emp.departamento].total += emp.nivel_estres || 5;
+        deptData[emp.departamento].count += 1;
+    });
+
+    const labels = Object.keys(deptData);
+    const stress = labels.map(dept => (deptData[dept].total / deptData[dept].count).toFixed(1));
+
     return new Chart(ctx, {
         type: 'bar',
-        data: chartData,
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Average Stress Level',
+                data: stress,
+                backgroundColor: '#FFB3BA'
+            }]
+        },
         options: {
-            ...defaultChartOptions,
+            ...defaultOptions,
             indexAxis: 'y',
             scales: {
-                x: {
-                    ...defaultChartOptions.scales.x,
-                    beginAtZero: true,
-                    max: 10
-                },
-                y: defaultChartOptions.scales.y
-            },
-            plugins: {
-                ...defaultChartOptions.plugins,
-                tooltip: {
-                    ...defaultChartOptions.plugins.tooltip,
-                    callbacks: {
-                        label: function(context) {
-                            return `Stress Level: ${context.parsed.x}/10`;
-                        }
-                    }
-                }
+                x: { beginAtZero: true, max: 10 }
             }
         }
     });
-}
-
-/**
- * Prepare chart data for different chart types
- */
-function prepareChartData(data, chartType) {
-    switch (chartType) {
-        case 'salary_by_department':
-            return prepareSalaryByDepartment(data);
-        case 'satisfaction_productivity':
-            return prepareSatisfactionProductivity(data);
-        case 'geographic_distribution':
-            return prepareGeographicDistribution(data);
-        case 'work_modality':
-            return prepareWorkModality(data);
-        case 'age_distribution':
-            return prepareAgeDistribution(data);
-        case 'education_impact':
-            return prepareEducationImpact(data);
-        case 'stress_analysis':
-            return prepareStressAnalysis(data);
-        case 'work_life_balance':
-            return prepareWorkLifeBalance(data);
-        default:
-            return {};
-    }
-}
-
-function prepareSalaryByDepartment(data) {
-    const grouped = groupByField(data, 'departamento');
-    const labels = Object.keys(grouped);
-    const salaries = labels.map(dept => {
-        const deptData = grouped[dept];
-        return Math.round(deptData.reduce((sum, emp) => sum + emp.salario_anual, 0) / deptData.length);
-    });
-
-    return {
-        labels: labels,
-        datasets: [{
-            label: 'Average Salary',
-            data: salaries,
-            backgroundColor: pastelColors.primary.slice(0, labels.length)
-        }]
-    };
-}
-
-function prepareSatisfactionProductivity(data) {
-    return {
-        datasets: [{
-            label: 'Employees',
-            data: data.map(emp => ({
-                x: emp.satisfaccion_laboral,
-                y: emp.productividad_score,
-                department: emp.departamento
-            })),
-            backgroundColor: 'rgba(102, 126, 234, 0.6)',
-            borderColor: 'rgba(102, 126, 234, 1)'
-        }]
-    };
-}
-
-function prepareGeographicDistribution(data) {
-    const grouped = groupByField(data, 'zona_geografica');
-    
-    return {
-        labels: Object.keys(grouped),
-        datasets: [{
-            data: Object.values(grouped).map(zone => zone.length),
-            backgroundColor: pastelColors.primary.slice(0, Object.keys(grouped).length)
-        }]
-    };
-}
-
-function prepareWorkModality(data) {
-    const grouped = groupByField(data, 'modalidad_trabajo');
-    const labels = Object.keys(grouped);
-    
-    const satisfactionData = labels.map(modality => {
-        const modalityData = grouped[modality];
-        return (modalityData.reduce((sum, emp) => sum + emp.satisfaccion_laboral, 0) / modalityData.length).toFixed(1);
-    });
-    
-    const productivityData = labels.map(modality => {
-        const modalityData = grouped[modality];
-        return (modalityData.reduce((sum, emp) => sum + emp.productividad_score, 0) / modalityData.length).toFixed(1);
-    });
-
-    return {
-        labels: labels,
-        datasets: [
-            {
-                label: 'Job Satisfaction',
-                data: satisfactionData,
-                backgroundColor: '#BAFFC9'
-            },
-            {
-                label: 'Productivity Score',
-                data: productivityData,
-                backgroundColor: '#BAE1FF'
-            }
-        ]
-    };
-}
-
-function prepareAgeDistribution(data) {
-    const ageGroups = ['< 25', '25-34', '35-44', '45-54', '55+'];
-    const distribution = {};
-    
-    ageGroups.forEach(group => distribution[group] = 0);
-    
-    data.forEach(emp => {
-        const age = emp.edad;
-        let group;
-        if (age < 25) group = '< 25';
-        else if (age < 35) group = '25-34';
-        else if (age < 45) group = '35-44';
-        else if (age < 55) group = '45-54';
-        else group = '55+';
-        
-        distribution[group]++;
-    });
-
-    return {
-        labels: ageGroups,
-        datasets: [{
-            data: Object.values(distribution),
-            backgroundColor: pastelColors.primary.slice(0, ageGroups.length)
-        }]
-    };
-}
-
-function prepareEducationImpact(data) {
-    const grouped = groupByField(data, 'nivel_educacion');
-    const labels = Object.keys(grouped);
-    
-    const salaryData = labels.map(edu => {
-        const eduData = grouped[edu];
-        return Math.round(eduData.reduce((sum, emp) => sum + emp.salario_anual, 0) / eduData.length);
-    });
-
-    return {
-        labels: labels,
-        datasets: [{
-            label: 'Average Salary',
-            data: salaryData,
-            backgroundColor: '#FFDFBA'
-        }]
-    };
-}
-
-function prepareStressAnalysis(data) {
-    const grouped = groupByField(data, 'departamento');
-    const labels = Object.keys(grouped);
-    
-    const stressData = labels.map(dept => {
-        const deptData = grouped[dept];
-        return (deptData.reduce((sum, emp) => sum + emp.nivel_estres, 0) / deptData.length).toFixed(1);
-    });
-
-    return {
-        labels: labels,
-        datasets: [{
-            label: 'Average Stress Level',
-            data: stressData,
-            backgroundColor: '#FFB3BA'
-        }]
-    };
-}
-
-function prepareWorkLifeBalance(data) {
-    const grouped = groupByField(data, 'departamento');
-    const labels = Object.keys(grouped);
-    
-    const weeklyHours = labels.map(dept => {
-        const deptData = grouped[dept];
-        return (deptData.reduce((sum, emp) => sum + emp.horas_semanales, 0) / deptData.length).toFixed(1);
-    });
-    
-    const exerciseHours = labels.map(dept => {
-        const deptData = grouped[dept];
-        return (deptData.reduce((sum, emp) => sum + emp.horas_ejercicio_semana, 0) / deptData.length).toFixed(1);
-    });
-    
-    const sleepHours = labels.map(dept => {
-        const deptData = grouped[dept];
-        return (deptData.reduce((sum, emp) => sum + emp.horas_sueno_noche, 0) / deptData.length).toFixed(1);
-    });
-
-    return {
-        labels: labels,
-        datasets: [
-            {
-                label: 'Weekly Hours',
-                data: weeklyHours,
-                backgroundColor: '#FFB3BA'
-            },
-            {
-                label: 'Exercise Hours/Week',
-                data: exerciseHours,
-                backgroundColor: '#BAFFC9'
-            },
-            {
-                label: 'Sleep Hours/Night',
-                data: sleepHours,
-                backgroundColor: '#BAE1FF'
-            }
-        ]
-    };
-}
-
-// Utility function to group data by field
-function groupByField(array, key) {
-    return array.reduce((result, item) => {
-        const group = item[key];
-        if (!result[group]) {
-            result[group] = [];
-        }
-        result[group].push(item);
-        return result;
-    }, {});
 }
 
 // Make functions available globally
+console.log('🌐 Making chart functions global...');
 window.createSalaryChart = createSalaryChart;
 window.createScatterChart = createScatterChart;
 window.createGeoChart = createGeoChart;
@@ -595,3 +415,5 @@ window.createWorkLifeChart = createWorkLifeChart;
 window.createAgeChart = createAgeChart;
 window.createEducationChart = createEducationChart;
 window.createStressChart = createStressChart;
+
+console.log('✅ Charts.js loaded successfully!');
