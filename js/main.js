@@ -58,11 +58,13 @@ class EmployeeDashboard {
             });
 
             if (parsedData.errors.length > 0) {
-                throw new Error('Error parsing CSV: ' + parsedData.errors[0].message);
+                console.warn('CSV parsing warnings:', parsedData.errors);
             }
 
             this.data = this.processData(parsedData.data);
             this.filteredData = [...this.data];
+            
+            console.log('CSV loaded:', this.data.length, 'employees');
             
             this.populateFilters();
             this.updateMetrics();
@@ -237,15 +239,23 @@ class EmployeeDashboard {
     initializeCharts() {
         if (this.filteredData.length === 0) return;
 
-        // Initialize all charts
-        this.charts.salary = createSalaryChart(this.filteredData);
-        this.charts.scatter = createScatterChart(this.filteredData);
-        this.charts.geo = createGeoChart(this.filteredData);
-        this.charts.modality = createModalityChart(this.filteredData);
-        this.charts.workLife = createWorkLifeChart(this.filteredData);
-        this.charts.age = createAgeChart(this.filteredData);
-        this.charts.education = createEducationChart(this.filteredData);
-        this.charts.stress = createStressChart(this.filteredData);
+        console.log('Initializing charts with', this.filteredData.length, 'employees');
+        
+        try {
+            // Initialize all charts using the global functions
+            this.charts.salary = window.createSalaryChart(this.filteredData);
+            this.charts.scatter = window.createScatterChart(this.filteredData);
+            this.charts.geo = window.createGeoChart(this.filteredData);
+            this.charts.modality = window.createModalityChart(this.filteredData);
+            this.charts.workLife = window.createWorkLifeChart(this.filteredData);
+            this.charts.age = window.createAgeChart(this.filteredData);
+            this.charts.education = window.createEducationChart(this.filteredData);
+            this.charts.stress = window.createStressChart(this.filteredData);
+            
+            console.log('Charts initialized successfully');
+        } catch (error) {
+            console.error('Error initializing charts:', error);
+        }
     }
 
     updateCharts() {
@@ -298,5 +308,17 @@ const calculateAverage = (array, key) => {
 
 // Initialize the dashboard when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-    window.dashboard = new EmployeeDashboard();
+    // Wait for Chart.js to load
+    if (typeof Chart !== 'undefined') {
+        window.dashboard = new EmployeeDashboard();
+    } else {
+        // Retry after a short delay
+        setTimeout(() => {
+            if (typeof Chart !== 'undefined') {
+                window.dashboard = new EmployeeDashboard();
+            } else {
+                console.error('Chart.js not loaded');
+            }
+        }, 1000);
+    }
 });
