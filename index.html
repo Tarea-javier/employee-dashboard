@@ -3,243 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Analytics Dashboard</title>
+    <title>Employee Analytics</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
     <div class="container">
-        <!-- Header Section -->
+        <!-- Header -->
         <header class="header">
-            <h1>Employee Analytics Dashboard</h1>
-            <p>Comprehensive analysis of employee data across departments and regions</p>
-            <div class="file-upload-section">
+            <h1>Employee Analytics</h1>
+            <p>Simple data visualization for employee metrics</p>
+            
+            <div class="upload-section">
                 <input type="file" id="csvFile" accept=".csv" class="file-input">
-                <label for="csvFile" class="file-label">Upload CSV File</label>
+                <label for="csvFile" class="file-label">Upload CSV</label>
                 <span class="file-status" id="fileStatus">No file selected</span>
             </div>
         </header>
 
-        <!-- Loading State -->
-        <div class="loading" id="loading" style="display: none;">
-            <div class="spinner"></div>
-            <p>Processing employee data...</p>
-        </div>
+        <!-- Loading -->
+        <div class="loading" id="loading">Loading data...</div>
 
-        <!-- Dashboard Content -->
+        <!-- Dashboard -->
         <div id="dashboard">
-            <!-- Key Metrics -->
-            <section class="metrics-section">
-                <div class="metrics-grid">
-                    <div class="metric-card employees-card">
-                        <div class="metric-icon">👥</div>
-                        <div class="metric-content">
-                            <div class="metric-value" id="totalEmployees">100</div>
-                            <div class="metric-label">Total Employees</div>
-                        </div>
-                    </div>
-                    <div class="metric-card salary-card">
-                        <div class="metric-icon">💰</div>
-                        <div class="metric-content">
-                            <div class="metric-value" id="avgSalary">$85,250</div>
-                            <div class="metric-label">Average Salary</div>
-                        </div>
-                    </div>
-                    <div class="metric-card satisfaction-card">
-                        <div class="metric-icon">😊</div>
-                        <div class="metric-content">
-                            <div class="metric-value" id="avgSatisfaction">7.8</div>
-                            <div class="metric-label">Job Satisfaction</div>
-                        </div>
-                    </div>
-                    <div class="metric-card productivity-card">
-                        <div class="metric-icon">📈</div>
-                        <div class="metric-content">
-                            <div class="metric-value" id="avgProductivity">89</div>
-                            <div class="metric-label">Productivity Score</div>
-                        </div>
-                    </div>
+            <!-- Metrics -->
+            <section class="metrics">
+                <div class="metric-card">
+                    <div class="metric-value" id="totalEmployees">50</div>
+                    <div class="metric-label">Total Employees</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="avgSalary">$85,250</div>
+                    <div class="metric-label">Average Salary</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="avgSatisfaction">7.8</div>
+                    <div class="metric-label">Job Satisfaction</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value" id="avgProductivity">89</div>
+                    <div class="metric-label">Productivity</div>
                 </div>
             </section>
 
-            <!-- Filters Section -->
-            <section class="filters-section">
-                <div class="filters-container">
-                    <h3>Filter Data</h3>
-                    <div class="filters-grid">
-                        <div class="filter-group">
-                            <label for="departmentFilter">Department</label>
-                            <select id="departmentFilter" class="filter-select">
-                                <option value="">All Departments</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="zoneFilter">Geographic Zone</label>
-                            <select id="zoneFilter" class="filter-select">
-                                <option value="">All Zones</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="modalityFilter">Work Modality</label>
-                            <select id="modalityFilter" class="filter-select">
-                                <option value="">All Modalities</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label for="educationFilter">Education Level</label>
-                            <select id="educationFilter" class="filter-select">
-                                <option value="">All Levels</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <button id="resetFilters" class="reset-btn">Reset Filters</button>
-                        </div>
+            <!-- Charts -->
+            <section class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-title">Salary by Department</div>
+                    <div class="chart-container">
+                        <canvas id="salaryChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-title">Satisfaction vs Productivity</div>
+                    <div class="chart-container">
+                        <canvas id="scatterChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-title">Geographic Distribution</div>
+                    <div class="chart-container">
+                        <canvas id="geoChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-title">Age Distribution</div>
+                    <div class="chart-container">
+                        <canvas id="ageChart"></canvas>
                     </div>
                 </div>
             </section>
-
-            <!-- Charts Section -->
-            <section class="charts-section">
-                <div class="charts-grid">
-                    <!-- Salary Analysis -->
-                    <div class="chart-card">
-                        <div class="chart-header">
-                            <h3>Salary Distribution by Department</h3>
-                            <div class="chart-info">Average salaries across departments</div>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="salaryChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Satisfaction vs Productivity -->
-                    <div class="chart-card">
-                        <div class="chart-header">
-                            <h3>Job Satisfaction vs Productivity</h3>
-                            <div class="chart-info">Correlation between satisfaction and performance</div>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="scatterChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Geographic Distribution -->
-                    <div class="chart-card">
-                        <div class="chart-header">
-                            <h3>Geographic Distribution</h3>
-                            <div class="chart-info">Employee distribution by zone</div>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="geoChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Work Modality -->
-                    <div class="chart-card">
-                        <div class="chart-header">
-                            <h3>Work Modality Analysis</h3>
-                            <div class="chart-info">Performance metrics by work arrangement</div>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="modalityChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Work-Life Balance -->
-                    <div class="chart-card large">
-                        <div class="chart-header">
-                            <h3>Work-Life Balance Metrics</h3>
-                            <div class="chart-info">Weekly hours, exercise, and stress levels</div>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="workLifeChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Age Distribution -->
-                    <div class="chart-card">
-                        <div class="chart-header">
-                            <h3>Age Distribution</h3>
-                            <div class="chart-info">Employee age demographics</div>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="ageChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Education Impact -->
-                    <div class="chart-card">
-                        <div class="chart-header">
-                            <h3>Education Level Impact</h3>
-                            <div class="chart-info">Performance by education level</div>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="educationChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Stress Analysis -->
-                    <div class="chart-card">
-                        <div class="chart-header">
-                            <h3>Stress Level Analysis</h3>
-                            <div class="chart-info">Stress distribution across departments</div>
-                        </div>
-                        <div class="chart-container">
-                            <canvas id="stressChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-
-        <!-- Error State -->
-        <div id="errorState" style="display: none;" class="error-container">
-            <div class="error-content">
-                <h3>Error Loading Data</h3>
-                <p id="errorMessage">Please check your CSV file and try again.</p>
-                <button onclick="location.reload()" class="retry-btn">Retry</button>
-            </div>
         </div>
     </div>
 
-    <!-- Load external libraries first -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js" 
-            onload="console.log('✅ Chart.js loaded successfully')" 
-            onerror="console.error('❌ Failed to load Chart.js')"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js" 
-            onload="console.log('✅ Papa Parse loaded successfully')" 
-            onerror="console.error('❌ Failed to load Papa Parse')"></script>
-
-    <!-- Load our scripts after external libraries -->
-    <script>
-        // Wait for external libraries to load before loading our scripts
-        function loadScript(src, callback) {
-            const script = document.createElement('script');
-            script.src = src;
-            script.onload = callback;
-            script.onerror = () => console.error('Failed to load:', src);
-            document.head.appendChild(script);
-        }
-
-        function checkDependencies() {
-            if (typeof Chart !== 'undefined' && typeof Papa !== 'undefined') {
-                console.log('🚀 All dependencies loaded, loading dashboard scripts...');
-                
-                loadScript('js/data-processor.js', () => {
-                    loadScript('js/charts.js', () => {
-                        loadScript('js/main.js', () => {
-                            console.log('✅ All scripts loaded successfully!');
-                        });
-                    });
-                });
-            } else {
-                console.log('⏳ Waiting for dependencies...');
-                setTimeout(checkDependencies, 100);
-            }
-        }
-
-        // Start checking for dependencies
-        checkDependencies();
-    </script>
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
