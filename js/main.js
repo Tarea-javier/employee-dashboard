@@ -16,10 +16,15 @@ class EmployeeDashboard {
 
     init() {
         console.log('Initializing dashboard...');
+        // Verificación simple y segura.
         if (typeof Chart === 'undefined') {
             console.error('Chart.js library is missing. Execution stopped.');
             return;
         }
+
+        // LA LÍNEA QUE CAUSABA EL ERROR HA SIDO ELIMINADA.
+        // Ya no se intenta registrar ningún complemento.
+
         this.configureChartDefaults();
         this.loadInitialData();
     }
@@ -193,8 +198,6 @@ class EmployeeDashboard {
         });
     }
     
-    // ----- CORRECCIÓN -----
-    // Esta función ahora crea una gráfica de barras simple, que no necesita plugins.
     createStressChart() {
         const modalityData = this.data.reduce((acc, e) => {
             const modality = e.modalidad_trabajo || 'N/A';
@@ -208,7 +211,7 @@ class EmployeeDashboard {
         const data = labels.map(m => modalityData[m].total / modalityData[m].count);
 
         this.charts.stress = new Chart('stressChart', {
-            type: 'bar', // Tipo cambiado de 'boxplot' a 'bar'
+            type: 'bar',
             data: {
                 labels: labels,
                 datasets: [{
