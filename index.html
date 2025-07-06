@@ -13,14 +13,7 @@
         <header class="header">
             <h1>Employee Analytics</h1>
             <p>Simple data visualization for employee metrics</p>
-            
-            <!-- La sección de subida de archivos fue eliminada -->
-            <!-- Los datos se cargan automáticamente desde el repositorio -->
-
         </header>
-
-        <!-- Loading -->
-        <div class="loading" id="loading">Loading data...</div>
 
         <!-- Dashboard -->
         <div id="dashboard">
@@ -44,33 +37,42 @@
                 </div>
             </section>
 
-            <!-- Charts -->
+            <!-- Charts Grid (Ahora con 6 gráficas) -->
             <section class="charts-grid">
                 <div class="chart-card">
-                    <div class="chart-title">Salary by Department</div>
+                    <div class="chart-title">Average Salary by Department</div>
                     <div class="chart-container">
                         <canvas id="salaryChart"></canvas>
                     </div>
                 </div>
-
                 <div class="chart-card">
                     <div class="chart-title">Satisfaction vs Productivity</div>
                     <div class="chart-container">
-                        <canvas id="scatterChart"></canvas>
+                        <canvas id="satisfactionChart"></canvas>
                     </div>
                 </div>
-
                 <div class="chart-card">
-                    <div class="chart-title">Geographic Distribution</div>
+                    <div class="chart-title">Employees by Geographic Zone</div>
                     <div class="chart-container">
                         <canvas id="geoChart"></canvas>
                     </div>
                 </div>
-
                 <div class="chart-card">
-                    <div class="chart-title">Age Distribution</div>
+                    <div class="chart-title">Employee Age Distribution</div>
                     <div class="chart-container">
-                        <canvas id="ageChart"></canvas>
+                        <canvas id="ageHistogramChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">Stress Level by Work Modality</div>
+                    <div class="chart-container">
+                        <canvas id="stressChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">Sleep Hours vs Stress Level</div>
+                    <div class="chart-container">
+                        <canvas id="sleepChart"></canvas>
                     </div>
                 </div>
             </section>
@@ -78,9 +80,10 @@
     </div>
 
     <!-- Scripts: Cargar dependencias PRIMERO, luego nuestro código -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-    
-    <!-- Carga tu script principal -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Script adicional para la gráfica de Box Plot -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-box-and-violin-plot/build/Chart.BoxPlot.min.js"></script>
+    <!-- Tu script principal -->
     <script src="js/main.js"></script>
 </body>
 </html>
