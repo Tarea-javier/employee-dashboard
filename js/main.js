@@ -6,7 +6,6 @@ class EmployeeDashboard {
         this.data = [];
         this.charts = {};
 
-        // Mantenemos la paleta de colores pastel que te gustó
         this.pastelPalette = [
             '#54a0ff', '#ff9f43', '#1dd1a1', '#ff6b6b', '#feca57',
             '#48dbfb', '#ff7979', '#c8d6e5', '#576574', '#eccc68'
@@ -21,13 +20,6 @@ class EmployeeDashboard {
             console.error('Chart.js library is missing. Execution stopped.');
             return;
         }
-
-        // --- LA CORRECCIÓN DEFINITIVA ESTÁ AQUÍ ---
-        // Se registra manualmente el plugin de Box Plot. Esto es necesario para que 
-        // la librería principal de Chart.js v4 "reconozca" el nuevo tipo de gráfica.
-        Chart.register(ChartBoxPlot.BoxPlotController, ChartBoxPlot.BoxAndWiskers);
-        // ------------------------------------------
-
         this.configureChartDefaults();
         this.loadInitialData();
     }
@@ -201,27 +193,39 @@ class EmployeeDashboard {
         });
     }
     
+    // ----- CORRECCIÓN -----
+    // Esta función ahora crea una gráfica de barras simple, que no necesita plugins.
     createStressChart() {
         const modalityData = this.data.reduce((acc, e) => {
             const modality = e.modalidad_trabajo || 'N/A';
-            if (!acc[modality]) acc[modality] = [];
-            acc[modality].push(e.nivel_estres);
+            if (!acc[modality]) acc[modality] = { total: 0, count: 0 };
+            acc[modality].total += e.nivel_estres;
+            acc[modality].count++;
             return acc;
         }, {});
         
+        const labels = Object.keys(modalityData);
+        const data = labels.map(m => modalityData[m].total / modalityData[m].count);
+
         this.charts.stress = new Chart('stressChart', {
-            type: 'boxplot',
+            type: 'bar', // Tipo cambiado de 'boxplot' a 'bar'
             data: {
-                labels: Object.keys(modalityData),
+                labels: labels,
                 datasets: [{
-                    label: 'Stress Level Distribution',
-                    data: Object.values(modalityData),
-                    backgroundColor: this.pastelPalette[1] + '99',
-                    borderColor: this.pastelPalette[1],
-                    borderWidth: 2,
+                    label: 'Average Stress Level',
+                    data: data,
+                    backgroundColor: this.pastelPalette[1],
                 }]
             },
-            options: { plugins: { legend: { display: false } } }
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Average Stress (1-10)' }
+                    }
+                }
+            }
         });
     }
 
