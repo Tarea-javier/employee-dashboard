@@ -6,52 +6,41 @@ class EmployeeDashboard {
         this.data = [];
         this.charts = {};
 
-        // Paleta de colores minimalista y estética
-        this.colorPalette = {
-            blue: '#5b9bd5',
-            orange: '#ed7d31',
-            gray: '#a5a5a5',
-            yellow: '#ffc000',
-            lightBlue: '#4472c4',
-            green: '#70ad47',
-            purple: '#7030a0',
-        };
+        // NUEVA PALETA DE COLORES PASTEL: Vibrante y estética
+        this.pastelPalette = [
+            '#54a0ff', '#ff9f43', '#1dd1a1', '#ff6b6b', '#feca57',
+            '#48dbfb', '#ff7979', '#c8d6e5', '#576574', '#eccc68'
+        ];
         this.departmentColors = {};
         this.init();
     }
 
     init() {
         console.log('Initializing dashboard...');
-        if (typeof Chart === 'undefined') {
-            console.error('Chart.js or a plugin is missing.');
+        if (typeof Chart === 'undefined' || typeof Chart.controllers.boxplot === 'undefined') {
+            console.error('Chart.js or a required plugin is missing.');
             return;
         }
         this.configureChartDefaults();
         this.loadInitialData();
     }
-
+    
+    // Configuración global para todas las gráficas
     configureChartDefaults() {
         Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
-        Chart.defaults.plugins.legend.position = 'top';
-        Chart.defaults.plugins.legend.align = 'end';
-        Chart.defaults.plugins.legend.labels.boxWidth = 12;
-        Chart.defaults.plugins.legend.labels.padding = 20;
-        Chart.defaults.plugins.tooltip.backgroundColor = '#FFF';
-        Chart.defaults.plugins.tooltip.titleColor = '#333';
-        Chart.defaults.plugins.tooltip.bodyColor = '#666';
-        Chart.defaults.plugins.tooltip.borderColor = '#DDD';
-        Chart.defaults.plugins.tooltip.borderWidth = 1;
-        Chart.defaults.plugins.tooltip.padding = 10;
-        Chart.defaults.plugins.tooltip.cornerRadius = 4;
+        Chart.defaults.plugins.legend.position = 'bottom'; // Leyenda abajo, más compacto
+        Chart.defaults.plugins.legend.labels.usePointStyle = true;
+        Chart.defaults.plugins.legend.labels.boxWidth = 8;
+        // CORREGIDO: Se fuerza a las gráficas a llenar el contenedor
+        Chart.defaults.maintainAspectRatio = false; 
     }
     
-    getDeptColor(department) {
-        if (!this.departmentColors[department]) {
-            const colorKeys = Object.keys(this.colorPalette);
-            const index = Object.keys(this.departmentColors).length % colorKeys.length;
-            this.departmentColors[department] = this.colorPalette[colorKeys[index]];
+    getColor(key, palette) {
+        if (!this.departmentColors[key]) {
+            const index = Object.keys(this.departmentColors).length % palette.length;
+            this.departmentColors[key] = palette[index];
         }
-        return this.departmentColors[department];
+        return this.departmentColors[key];
     }
     
     async loadInitialData() {
@@ -69,14 +58,17 @@ class EmployeeDashboard {
         const lines = csvText.split('\n').slice(1).filter(line => line.trim());
         const headers = csvText.split('\n')[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
         
-        const requiredCols = ['departamento', 'salario_anual', 'satisfaccion_laboral', 'productividad_score', 'zona_geografica', 'edad', 'modalidad_trabajo', 'nivel_estres', 'horas_sueno_noche'];
-        const colIndices = {};
-        requiredCols.forEach(col => colIndices[col] = headers.indexOf(col));
+        const colIndices = requiredCols => requiredCols.reduce((acc, col) => {
+            acc[col] = headers.indexOf(col);
+            return acc;
+        }, {});
+        
+        const indices = colIndices(['departamento', 'salario_anual', 'satisfaccion_laboral', 'productividad_score', 'zona_geografica', 'edad', 'modalidad_trabajo', 'nivel_estres', 'horas_sueno_noche']);
 
         this.data = lines.map(line => {
             const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
             const employee = {};
-            requiredCols.forEach(col => employee[col] = values[colIndices[col]]);
+            Object.keys(indices).forEach(key => employee[key] = values[indices[key]]);
             return {
                 ...employee,
                 salario_anual: parseInt(employee.salario_anual) || 0,
@@ -108,16 +100,11 @@ class EmployeeDashboard {
         document.getElementById('avgSatisfaction').textContent = avgSatisfaction.toFixed(1);
         document.getElementById('avgProductivity').textContent = avgProductivity.toString();
     }
-
-    destroyChart(chartId) {
-        if (this.charts[chartId]) {
-            this.charts[chartId].destroy();
-        }
-    }
     
     createAllCharts() {
-        Object.keys(this.charts).forEach(id => this.destroyChart(id));
-
+        Object.values(this.charts).forEach(chart => chart.destroy());
+        this.charts = {};
+        
         this.createSalaryChart();
         this.createSatisfactionChart();
         this.createGeoChart();
@@ -144,19 +131,11 @@ class EmployeeDashboard {
                 datasets: [{
                     label: 'Average Salary',
                     data,
-                    backgroundColor: labels.map(dept => this.getDeptColor(dept)),
+                    backgroundColor: labels.map(dept => this.getColor(dept, this.pastelPalette)),
                     borderWidth: 0,
-                    barPercentage: 0.7,
-                    categoryPercentage: 0.8,
                 }]
             },
-            options: {
-                plugins: { legend: { display: false } },
-                scales: { 
-                    y: { ticks: { callback: v => '$' + (v/1000) + 'K' } },
-                    x: { grid: { display: false } }
-                }
-            }
+            options: { plugins: { legend: { display: false } } }
         });
     }
 
@@ -168,22 +147,11 @@ class EmployeeDashboard {
         }, {})).map(([dept, data]) => ({
             label: dept,
             data,
-            backgroundColor: this.getDeptColor(dept) + 'B3', // 70% opacity
-            borderColor: this.getDeptColor(dept),
-            borderWidth: 1,
-            pointRadius: 3,
-            pointHoverRadius: 5
+            backgroundColor: this.getColor(dept, this.pastelPalette) + 'B3', // 70% opacity
         }));
 
         this.charts.satisfaction = new Chart('satisfactionChart', {
-            type: 'scatter',
-            data: { datasets },
-            options: {
-                scales: {
-                    x: { title: { display: true, text: 'Job Satisfaction' } },
-                    y: { title: { display: true, text: 'Productivity Score' } }
-                }
-            }
+            type: 'scatter', data: { datasets }
         });
     }
 
@@ -192,7 +160,6 @@ class EmployeeDashboard {
             acc[e.zona_geografica] = (acc[e.zona_geografica] || 0) + 1;
             return acc;
         }, {});
-
         const sortedZones = Object.entries(zoneData).sort((a, b) => b[1] - a[1]);
         
         this.charts.geo = new Chart('geoChart', {
@@ -200,16 +167,11 @@ class EmployeeDashboard {
             data: {
                 labels: sortedZones.map(z => z[0]),
                 datasets: [{
-                    label: 'Number of Employees',
                     data: sortedZones.map(z => z[1]),
-                    backgroundColor: this.colorPalette.lightBlue,
+                    backgroundColor: this.pastelPalette[0],
                 }]
             },
-            options: {
-                indexAxis: 'y', // Makes it a horizontal bar chart
-                plugins: { legend: { display: false } },
-                scales: { x: { grid: { display: false } } }
-            }
+            options: { indexAxis: 'y', plugins: { legend: { display: false } } }
         });
     }
 
@@ -219,7 +181,6 @@ class EmployeeDashboard {
             acc[bin] = (acc[bin] || 0) + 1;
             return acc;
         }, {});
-
         const labels = Object.keys(ageGroups).sort((a,b) => a - b).map(bin => `${bin}-${parseInt(bin) + 4}`);
         const data = Object.keys(ageGroups).sort((a,b) => a - b).map(bin => ageGroups[bin]);
 
@@ -227,16 +188,9 @@ class EmployeeDashboard {
             type: 'bar',
             data: {
                 labels,
-                datasets: [{
-                    label: 'Employee Count',
-                    data,
-                    backgroundColor: this.colorPalette.green
-                }]
+                datasets: [{ data, backgroundColor: this.pastelPalette[2] }]
             },
-            options: {
-                plugins: { legend: { display: false } },
-                scales: { x: { grid: { display: false } } }
-            }
+            options: { plugins: { legend: { display: false } } }
         });
     }
     
@@ -252,17 +206,13 @@ class EmployeeDashboard {
             data: {
                 labels: Object.keys(modalityData),
                 datasets: [{
-                    label: 'Stress Level Distribution',
                     data: Object.values(modalityData),
-                    backgroundColor: this.colorPalette.orange + '99',
-                    borderColor: this.colorPalette.orange,
-                    borderWidth: 1,
+                    backgroundColor: this.pastelPalette[1] + '99',
+                    borderColor: this.pastelPalette[1],
+                    borderWidth: 2,
                 }]
             },
-            options: {
-                plugins: { legend: { display: false } },
-                scales: { y: { title: { display: true, text: 'Stress Level (1-10)' } } }
-            }
+            options: { plugins: { legend: { display: false } } }
         });
     }
 
@@ -271,18 +221,11 @@ class EmployeeDashboard {
             type: 'scatter',
             data: {
                 datasets: [{
-                    label: 'Employees',
                     data: this.data.map(e => ({ x: e.horas_sueno_noche, y: e.nivel_estres })),
-                    backgroundColor: this.colorPalette.purple + '99',
+                    backgroundColor: this.pastelPalette[3] + 'B3',
                 }]
             },
-            options: {
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { title: { display: true, text: 'Hours of Sleep per Night' } },
-                    y: { title: { display: true, text: 'Stress Level' } }
-                }
-            }
+            options: { plugins: { legend: { display: false } } }
         });
     }
 }
