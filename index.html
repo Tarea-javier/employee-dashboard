@@ -37,7 +37,7 @@
                 </div>
             </section>
 
-            <!-- Charts Grid (con el layout corregido a 2 columnas) -->
+            <!-- Charts Grid -->
             <section class="charts-grid">
                 <div class="chart-card">
                     <div class="chart-title">Average Salary by Department</div>
@@ -79,11 +79,11 @@
         </div>
     </div>
 
-    <!-- SCRIPTS CORREGIDOS -->
-    <!-- Se fija la versión de Chart.js a una compatible con el plugin (v3.9.1) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-    <!-- Se carga el plugin para Box Plot DESPUÉS de la librería principal -->
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-box-and-violin-plot@3.1.0/build/Chart.BoxPlot.min.js"></script>
+    <!-- SCRIPTS CORREGIDOS - USANDO VERSIONES MODERNAS Y COMPATIBLES -->
+    <!-- Chart.js v4 (la más reciente y estable) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Un plugin de BoxPlot moderno y compatible con Chart.js v4 -->
+    <script src="https://unpkg.com/chartjs-chart-boxplot@4.2.0/build/index.umd.min.js"></script>
     <!-- Tu script principal -->
     <script src="js/main.js"></script>
 </body>
