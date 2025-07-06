@@ -17,12 +17,17 @@ class EmployeeDashboard {
 
     init() {
         console.log('Initializing dashboard...');
-        // CORRECCIÓN CLAVE: La comprobación de errores ahora es más simple y robusta.
-        // Solo necesitamos asegurarnos de que el objeto principal 'Chart' existe.
         if (typeof Chart === 'undefined') {
             console.error('Chart.js library is missing. Execution stopped.');
-            return; // Detiene todo si la librería principal no carga.
+            return;
         }
+
+        // --- LA CORRECCIÓN DEFINITIVA ESTÁ AQUÍ ---
+        // Se registra manualmente el plugin de Box Plot. Esto es necesario para que 
+        // la librería principal de Chart.js v4 "reconozca" el nuevo tipo de gráfica.
+        Chart.register(ChartBoxPlot.BoxPlotController, ChartBoxPlot.BoxAndWiskers);
+        // ------------------------------------------
+
         this.configureChartDefaults();
         this.loadInitialData();
     }
@@ -149,7 +154,7 @@ class EmployeeDashboard {
         }, {})).map(([dept, data]) => ({
             label: dept,
             data,
-            backgroundColor: this.getColor(dept, this.pastelPalette) + 'B3',
+            backgroundColor: this.getColor(dept, this.pastelPalette) + 'B3', // 70% opacity
         }));
 
         this.charts.satisfaction = new Chart('satisfactionChart', {
@@ -198,8 +203,9 @@ class EmployeeDashboard {
     
     createStressChart() {
         const modalityData = this.data.reduce((acc, e) => {
-            if (!acc[e.modalidad_trabajo]) acc[e.modalidad_trabajo] = [];
-            acc[e.modalidad_trabajo].push(e.nivel_estres);
+            const modality = e.modalidad_trabajo || 'N/A';
+            if (!acc[modality]) acc[modality] = [];
+            acc[modality].push(e.nivel_estres);
             return acc;
         }, {});
         
@@ -208,6 +214,7 @@ class EmployeeDashboard {
             data: {
                 labels: Object.keys(modalityData),
                 datasets: [{
+                    label: 'Stress Level Distribution',
                     data: Object.values(modalityData),
                     backgroundColor: this.pastelPalette[1] + '99',
                     borderColor: this.pastelPalette[1],
@@ -223,6 +230,7 @@ class EmployeeDashboard {
             type: 'scatter',
             data: {
                 datasets: [{
+                    label: 'Employees',
                     data: this.data.map(e => ({ x: e.horas_sueno_noche, y: e.nivel_estres })),
                     backgroundColor: this.pastelPalette[3] + 'B3',
                 }]
