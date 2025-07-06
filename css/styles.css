@@ -1,5 +1,4 @@
 /* Estilo Minimalista y Profesional para el Dashboard */
-
 * {
     margin: 0;
     padding: 0;
@@ -7,18 +6,16 @@
 }
 
 :root {
-    /* Paleta de colores principal */
-    --primary-blue: #4285F4;
-    --text-dark: #202124;
-    --text-light: #5f6368;
+    --primary-blue: #0077b6;
+    --text-dark: #212529;
+    --text-light: #6c757d;
     --background-main: #f8f9fa;
     --background-card: #ffffff;
-    --border-color: #e8eaed;
+    --border-color: #dee2e6;
 
-    /* Sombras y espaciado */
-    --shadow-light: 0 1px 2px rgba(0, 0, 0, 0.08);
-    --shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --radius: 8px;
+    --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-medium: 0 5px 15px rgba(0, 0, 0, 0.08);
+    --radius: 12px;
     --spacing-md: 24px;
     --spacing-lg: 32px;
 }
@@ -28,40 +25,32 @@ body {
     background-color: var(--background-main);
     color: var(--text-dark);
     line-height: 1.6;
-    font-size: 14px;
 }
 
-/* Contenedor principal más ancho para el nuevo layout */
 .container {
     max-width: 1400px;
     margin: 0 auto;
     padding: var(--spacing-lg);
 }
 
-/* Encabezado */
 .header {
     text-align: center;
     margin-bottom: var(--spacing-lg);
 }
 
 .header h1 {
-    font-size: 2.25rem;
-    font-weight: 500;
-    color: var(--text-dark);
-    margin-bottom: 8px;
+    font-size: 2.5rem;
+    font-weight: 600;
 }
 
 .header p {
+    font-size: 1.1rem;
     color: var(--text-light);
-    font-size: 1rem;
-    max-width: 600px;
-    margin: 0 auto;
 }
 
-/* Tarjetas de métricas */
 .metrics {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-lg);
 }
@@ -70,90 +59,63 @@ body {
     background: var(--background-card);
     padding: var(--spacing-md);
     border-radius: var(--radius);
-    box-shadow: var(--shadow-light);
-    text-align: center;
     border: 1px solid var(--border-color);
+    text-align: center;
     transition: all 0.2s ease-in-out;
 }
 
 .metric-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-5px);
     box-shadow: var(--shadow-medium);
 }
 
 .metric-value {
-    font-size: 2.5rem;
-    font-weight: 500;
+    font-size: 2.75rem;
+    font-weight: 600;
     color: var(--primary-blue);
-    margin-bottom: 4px;
-    line-height: 1;
+    line-height: 1.1;
 }
 
 .metric-label {
+    font-size: 0.8rem;
     color: var(--text-light);
-    font-size: 12px;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
-    font-weight: 500;
+    letter-spacing: 1px;
 }
 
-/* Grid de gráficas (modificado para ser más responsivo) */
+/* CORREGIDO: Layout de 2 columnas para pantallas grandes */
 .charts-grid {
     display: grid;
-    grid-template-columns: 1fr; /* Una columna por defecto (móvil) */
+    grid-template-columns: 1fr;
     gap: var(--spacing-md);
+}
+
+/* A partir de 992px de ancho, pasamos a 2 columnas */
+@media (min-width: 992px) {
+    .charts-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .chart-card {
     background: var(--background-card);
     padding: var(--spacing-md);
     border-radius: var(--radius);
-    box-shadow: var(--shadow-light);
     border: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
 }
 
 .chart-title {
-    font-size: 16px;
-    font-weight: 500;
+    font-size: 1.1rem;
+    font-weight: 600;
     color: var(--text-dark);
     margin-bottom: 16px;
-    text-align: left; /* Títulos alineados a la izquierda para un look más limpio */
 }
 
+/* CORREGIDO: Ajuste de altura para proporciones rectangulares */
 .chart-container {
     position: relative;
-    height: 300px;
+    height: 280px; /* Altura reducida para un look más panorámico */
     width: 100%;
-    flex-grow: 1;
-}
-
-/* Diseño Responsivo para el nuevo grid */
-/* Dos columnas para tablets y pantallas pequeñas */
-@media (min-width: 768px) {
-    .charts-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-/* Tres columnas para pantallas de escritorio */
-@media (min-width: 1200px) {
-    .charts-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-
-/* Estilos para impresión */
-@media print {
-    body {
-        background: white;
-    }
-    
-    .header,
-    .metric-card,
-    .chart-card {
-        box-shadow: none;
-        border: 1px solid #ddd;
-    }
 }
