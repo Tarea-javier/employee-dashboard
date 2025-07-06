@@ -79,8 +79,77 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
-    <script src="js/main.js"></script>
+    <!-- Scripts: Chart.js PRIMERO, luego nuestro código -->
+    <script>
+        // Cargar Chart.js y verificar que se cargó correctamente
+        function loadChartJS() {
+            return new Promise((resolve, reject) => {
+                if (typeof Chart !== 'undefined') {
+                    console.log('✅ Chart.js already loaded');
+                    resolve();
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js';
+                script.onload = () => {
+                    console.log('✅ Chart.js loaded successfully');
+                    resolve();
+                };
+                script.onerror = () => {
+                    console.error('❌ Failed to load Chart.js');
+                    reject(new Error('Failed to load Chart.js'));
+                };
+                document.head.appendChild(script);
+            });
+        }
+
+        // Cargar nuestro script principal
+        function loadMainScript() {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'js/main.js';
+                script.onload = () => {
+                    console.log('✅ Main script loaded');
+                    resolve();
+                };
+                script.onerror = () => {
+                    console.error('❌ Failed to load main script');
+                    reject(new Error('Failed to load main script'));
+                };
+                document.head.appendChild(script);
+            });
+        }
+
+        // Inicializar cuando todo esté listo
+        async function initializeApp() {
+            try {
+                console.log('🚀 Starting app initialization...');
+                await loadChartJS();
+                await loadMainScript();
+                console.log('✅ App initialization complete');
+            } catch (error) {
+                console.error('❌ App initialization failed:', error);
+                
+                // Mostrar error en la interfaz
+                document.getElementById('dashboard').innerHTML = `
+                    <div style="text-align: center; padding: 40px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <h3 style="color: #ea4335; margin-bottom: 16px;">Failed to Load Dashboard</h3>
+                        <p style="color: #5f6368; margin-bottom: 16px;">There was an error loading the required dependencies.</p>
+                        <button onclick="location.reload()" style="background: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+                            Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Esperar a que el DOM esté listo
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+    </script>
 </body>
 </html>
