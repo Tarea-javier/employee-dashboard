@@ -16,15 +16,10 @@ class EmployeeDashboard {
 
     init() {
         console.log('Initializing dashboard...');
-        // Verificación simple y segura.
         if (typeof Chart === 'undefined') {
             console.error('Chart.js library is missing. Execution stopped.');
             return;
         }
-
-        // LA LÍNEA QUE CAUSABA EL ERROR HA SIDO ELIMINADA.
-        // Ya no se intenta registrar ningún complemento.
-
         this.configureChartDefaults();
         this.loadInitialData();
     }
@@ -117,17 +112,15 @@ class EmployeeDashboard {
         this.createSleepChart();
     }
 
-    createSalaryChart() {
+    createSalaryChart() { /* Sin cambios */
         const deptData = this.data.reduce((acc, e) => {
             acc[e.departamento] = acc[e.departamento] || { total: 0, count: 0 };
             acc[e.departamento].total += e.salario_anual;
             acc[e.departamento].count++;
             return acc;
         }, {});
-
         const labels = Object.keys(deptData).sort();
         const data = labels.map(dept => Math.round(deptData[dept].total / deptData[dept].count));
-        
         this.charts.salary = new Chart('salaryChart', {
             type: 'bar',
             data: {
@@ -143,7 +136,7 @@ class EmployeeDashboard {
         });
     }
 
-    createSatisfactionChart() {
+    createSatisfactionChart() { /* Sin cambios */
         const datasets = Object.entries(this.data.reduce((acc, e) => {
             if (!acc[e.departamento]) acc[e.departamento] = [];
             acc[e.departamento].push({ x: e.satisfaccion_laboral, y: e.productividad_score });
@@ -151,35 +144,28 @@ class EmployeeDashboard {
         }, {})).map(([dept, data]) => ({
             label: dept,
             data,
-            backgroundColor: this.getColor(dept, this.pastelPalette) + 'B3', // 70% opacity
+            backgroundColor: this.getColor(dept, this.pastelPalette) + 'B3',
         }));
-
-        this.charts.satisfaction = new Chart('satisfactionChart', {
-            type: 'scatter', data: { datasets }
-        });
+        this.charts.satisfaction = new Chart('satisfactionChart', { type: 'scatter', data: { datasets } });
     }
 
-    createGeoChart() {
+    createGeoChart() { /* Sin cambios */
         const zoneData = this.data.reduce((acc, e) => {
             acc[e.zona_geografica] = (acc[e.zona_geografica] || 0) + 1;
             return acc;
         }, {});
         const sortedZones = Object.entries(zoneData).sort((a, b) => b[1] - a[1]);
-        
         this.charts.geo = new Chart('geoChart', {
             type: 'bar',
             data: {
                 labels: sortedZones.map(z => z[0]),
-                datasets: [{
-                    data: sortedZones.map(z => z[1]),
-                    backgroundColor: this.pastelPalette[0],
-                }]
+                datasets: [{ data: sortedZones.map(z => z[1]), backgroundColor: this.pastelPalette[0] }]
             },
             options: { indexAxis: 'y', plugins: { legend: { display: false } } }
         });
     }
 
-    createAgeHistogramChart() {
+    createAgeHistogramChart() { /* Sin cambios */
         const ageGroups = this.data.reduce((acc, e) => {
             const bin = Math.floor(e.edad / 5) * 5;
             acc[bin] = (acc[bin] || 0) + 1;
@@ -187,18 +173,14 @@ class EmployeeDashboard {
         }, {});
         const labels = Object.keys(ageGroups).sort((a,b) => a - b).map(bin => `${bin}-${parseInt(bin) + 4}`);
         const data = Object.keys(ageGroups).sort((a,b) => a - b).map(bin => ageGroups[bin]);
-
         this.charts.age = new Chart('ageHistogramChart', {
             type: 'bar',
-            data: {
-                labels,
-                datasets: [{ data, backgroundColor: this.pastelPalette[2] }]
-            },
+            data: { labels, datasets: [{ data, backgroundColor: this.pastelPalette[2] }] },
             options: { plugins: { legend: { display: false } } }
         });
     }
     
-    createStressChart() {
+    createStressChart() { /* Sin cambios */
         const modalityData = this.data.reduce((acc, e) => {
             const modality = e.modalidad_trabajo || 'N/A';
             if (!acc[modality]) acc[modality] = { total: 0, count: 0 };
@@ -206,43 +188,84 @@ class EmployeeDashboard {
             acc[modality].count++;
             return acc;
         }, {});
-        
         const labels = Object.keys(modalityData);
         const data = labels.map(m => modalityData[m].total / modalityData[m].count);
-
         this.charts.stress = new Chart('stressChart', {
             type: 'bar',
             data: {
                 labels: labels,
-                datasets: [{
-                    label: 'Average Stress Level',
-                    data: data,
-                    backgroundColor: this.pastelPalette[1],
-                }]
+                datasets: [{ label: 'Average Stress Level', data: data, backgroundColor: this.pastelPalette[1] }]
             },
             options: {
                 plugins: { legend: { display: false } },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: { display: true, text: 'Average Stress (1-10)' }
-                    }
-                }
+                scales: { y: { beginAtZero: true, title: { display: true, text: 'Average Stress (1-10)' } } }
             }
         });
     }
 
+    // --- NUEVA FUNCIÓN AUXILIAR PARA CÁLCULO ---
+    calculateLinearRegression(data) {
+        const n = data.length;
+        if (n === 0) return { m: 0, b: 0 };
+
+        let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+        data.forEach(({ x, y }) => {
+            sumX += x;
+            sumY += y;
+            sumXY += x * y;
+            sumXX += x * x;
+        });
+
+        const m = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+        const b = (sumY - m * sumX) / n;
+        return { m, b };
+    }
+
+    // --- GRÁFICA MODIFICADA ---
     createSleepChart() {
+        const scatterData = this.data.map(e => ({ x: e.horas_sueno_noche, y: e.nivel_estres }));
+
+        // 1. Calcular la regresión lineal
+        const regression = this.calculateLinearRegression(scatterData);
+        
+        // 2. Preparar los puntos para la línea de tendencia
+        const xValues = scatterData.map(p => p.x);
+        const minX = Math.min(...xValues);
+        const maxX = Math.max(...xValues);
+        const trendlinePoints = [
+            { x: minX, y: regression.m * minX + regression.b },
+            { x: maxX, y: regression.m * maxX + regression.b }
+        ];
+
+        // 3. Combinar los puntos y la línea en los datasets
         this.charts.sleep = new Chart('sleepChart', {
             type: 'scatter',
             data: {
-                datasets: [{
-                    label: 'Employees',
-                    data: this.data.map(e => ({ x: e.horas_sueno_noche, y: e.nivel_estres })),
-                    backgroundColor: this.pastelPalette[3] + 'B3',
-                }]
+                datasets: [
+                    { // Dataset de los puntos
+                        label: 'Employees',
+                        data: scatterData,
+                        backgroundColor: this.pastelPalette[3] + '80', // Opacidad reducida
+                        pointRadius: 4,
+                    },
+                    { // Dataset de la línea de tendencia
+                        label: 'Trendline',
+                        data: trendlinePoints,
+                        type: 'line', // Le decimos que esta parte es una línea
+                        borderColor: '#e74c3c', // Un rojo fuerte para que destaque
+                        borderWidth: 2,
+                        pointRadius: 0, // No queremos puntos en la línea, solo la línea
+                        fill: false
+                    }
+                ]
             },
-            options: { plugins: { legend: { display: false } } }
+            options: { 
+                plugins: { legend: { display: true } }, // Mostramos la leyenda
+                 scales: {
+                    x: { title: { display: true, text: 'Hours of Sleep per Night' } },
+                    y: { title: { display: true, text: 'Stress Level' } }
+                }
+            }
         });
     }
 }
