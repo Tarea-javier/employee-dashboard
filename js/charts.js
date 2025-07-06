@@ -225,7 +225,7 @@ function createModalityChart(data) {
 }
 
 /**
- * Create work-life balance radar chart
+ * Create work-life balance chart
  */
 function createWorkLifeChart(data) {
     const ctx = document.getElementById('workLifeChart').getContext('2d');
@@ -358,7 +358,7 @@ function createStressChart(data) {
     const chartData = DataProcessor.prepareChartData(data, 'stress_analysis');
     
     return new Chart(ctx, {
-        type: 'horizontalBar',
+        type: 'bar',
         data: chartData,
         options: {
             ...defaultChartOptions,
@@ -488,5 +488,5 @@ const ChartUtils = {
     }
 };
 
-// Export charts object for global access
+// Make ChartUtils available globally
 window.ChartUtils = ChartUtils;
