@@ -37,6 +37,30 @@
                 </div>
             </section>
 
+            <!-- ============================================= -->
+            <!-- ================ NUEVA SECCIÓN ================ -->
+            <!-- ============================================= -->
+            <section class="filters">
+                <div class="filter-group">
+                    <label for="filterDepartment">Departamento:</label>
+                    <select id="filterDepartment">
+                        <option value="all">Todos</option>
+                        <!-- Opciones se llenarán con JS -->
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filterGeoZone">Zona Geográfica:</label>
+                    <select id="filterGeoZone">
+                        <option value="all">Todas</option>
+                        <!-- Opciones se llenarán con JS -->
+                    </select>
+                </div>
+                <button id="resetFilters" class="reset-button">Limpiar Filtros</button>
+            </section>
+            <!-- ============================================= -->
+            <!-- ================ FIN NUEVA SECCIÓN ============ -->
+            <!-- ============================================= -->
+
             <!-- Charts Grid -->
             <section class="charts-grid">
                 <div class="chart-card">
@@ -70,7 +94,6 @@
                     </div>
                 </div>
                 <div class="chart-card">
-                    <!-- TÍTULO ACTUALIZADO -->
                     <div class="chart-title">Sleep vs Stress with Trendline</div>
                     <div class="chart-container">
                         <canvas id="sleepChart"></canvas>
