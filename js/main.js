@@ -1,4 +1,3 @@
-// Employee Analytics Dashboard - Simple Version
 console.log('Main script starting...');
 
 class EmployeeDashboard {
@@ -7,351 +6,281 @@ class EmployeeDashboard {
         this.data = [];
         this.charts = {};
 
-        // Paleta de colores pastel inspirada en las librerías de visualización de Python
-        this.pastelColors = [
-            '#a6cee3', '#1f78b4', '#b2df8a', '#33a02c', '#fb9a99', 
-            '#e31a1c', '#fdbf6f', '#ff7f00', '#cab2d6', '#6a3d9a'
-        ];
-        this.departmentColorMap = {};
-
+        // Paleta de colores minimalista y estética
+        this.colorPalette = {
+            blue: '#5b9bd5',
+            orange: '#ed7d31',
+            gray: '#a5a5a5',
+            yellow: '#ffc000',
+            lightBlue: '#4472c4',
+            green: '#70ad47',
+            purple: '#7030a0',
+        };
+        this.departmentColors = {};
         this.init();
     }
 
     init() {
         console.log('Initializing dashboard...');
-        
         if (typeof Chart === 'undefined') {
-            console.error('Chart.js not available in main.js');
-            document.getElementById('dashboard').innerHTML = '<p style="text-align:center; color:red;">Error: No se pudo cargar la librería de gráficos.</p>';
+            console.error('Chart.js or a plugin is missing.');
             return;
         }
-        
-        console.log('Chart.js is available!');
-        
+        this.configureChartDefaults();
         this.loadInitialData();
     }
 
-    // Función para asignar un color consistente a cada departamento
-    getDepartmentColor(department) {
-        if (!this.departmentColorMap[department]) {
-            const colorIndex = Object.keys(this.departmentColorMap).length % this.pastelColors.length;
-            this.departmentColorMap[department] = this.pastelColors[colorIndex];
+    configureChartDefaults() {
+        Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
+        Chart.defaults.plugins.legend.position = 'top';
+        Chart.defaults.plugins.legend.align = 'end';
+        Chart.defaults.plugins.legend.labels.boxWidth = 12;
+        Chart.defaults.plugins.legend.labels.padding = 20;
+        Chart.defaults.plugins.tooltip.backgroundColor = '#FFF';
+        Chart.defaults.plugins.tooltip.titleColor = '#333';
+        Chart.defaults.plugins.tooltip.bodyColor = '#666';
+        Chart.defaults.plugins.tooltip.borderColor = '#DDD';
+        Chart.defaults.plugins.tooltip.borderWidth = 1;
+        Chart.defaults.plugins.tooltip.padding = 10;
+        Chart.defaults.plugins.tooltip.cornerRadius = 4;
+    }
+    
+    getDeptColor(department) {
+        if (!this.departmentColors[department]) {
+            const colorKeys = Object.keys(this.colorPalette);
+            const index = Object.keys(this.departmentColors).length % colorKeys.length;
+            this.departmentColors[department] = this.colorPalette[colorKeys[index]];
         }
-        return this.departmentColorMap[department];
+        return this.departmentColors[department];
     }
     
     async loadInitialData() {
-        console.log('Loading initial data from data/work.csv...');
+        console.log('Loading initial data...');
         try {
             const response = await fetch('data/work.csv');
-            if (!response.ok) {
-                throw new Error(`Network response was not ok: ${response.statusText}`);
-            }
             const csvText = await response.text();
             this.processCSVData(csvText);
-            
         } catch (error) {
             console.error('Error loading initial CSV:', error);
-            const dashboard = document.getElementById('dashboard');
-            dashboard.innerHTML = `<p style="text-align:center; color:red;">Error: No se pudo cargar el archivo de datos (work.csv). Verifica que el archivo exista en la carpeta 'data'.</p>`;
         }
     }
 
     processCSVData(csvText) {
-        console.log('Processing CSV data...');
-        try {
-            const lines = csvText.split('\n').filter(line => line.trim());
-            if (lines.length < 2) throw new Error('Invalid CSV file: Not enough lines.');
-            
-            const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
-            console.log('Headers:', headers);
+        const lines = csvText.split('\n').slice(1).filter(line => line.trim());
+        const headers = csvText.split('\n')[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+        
+        const requiredCols = ['departamento', 'salario_anual', 'satisfaccion_laboral', 'productividad_score', 'zona_geografica', 'edad', 'modalidad_trabajo', 'nivel_estres', 'horas_sueno_noche'];
+        const colIndices = {};
+        requiredCols.forEach(col => colIndices[col] = headers.indexOf(col));
 
-            const cols = {
-                dept: this.findColumn(headers, ['departamento', 'department']),
-                salary: this.findColumn(headers, ['salario_anual', 'salary']),
-                satisfaction: this.findColumn(headers, ['satisfaccion_laboral', 'satisfaction']),
-                productivity: this.findColumn(headers, ['productividad_score', 'productivity']),
-                zone: this.findColumn(headers, ['zona_geografica', 'zone']),
-                age: this.findColumn(headers, ['edad', 'age']),
+        this.data = lines.map(line => {
+            const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+            const employee = {};
+            requiredCols.forEach(col => employee[col] = values[colIndices[col]]);
+            return {
+                ...employee,
+                salario_anual: parseInt(employee.salario_anual) || 0,
+                satisfaccion_laboral: parseFloat(employee.satisfaccion_laboral) || 0,
+                productividad_score: parseInt(employee.productividad_score) || 0,
+                edad: parseInt(employee.edad) || 0,
+                nivel_estres: parseFloat(employee.nivel_estres) || 0,
+                horas_sueno_noche: parseFloat(employee.horas_sueno_noche) || 0,
             };
-
-            const newData = [];
-            for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
-                if (values.length >= headers.length) {
-                    newData.push({
-                        department: values[cols.dept] || 'Unknown',
-                        salary: parseInt(values[cols.salary]) || 0,
-                        satisfaction: parseFloat(values[cols.satisfaction]) || 0,
-                        productivity: parseInt(values[cols.productivity]) || 0,
-                        zone: values[cols.zone] || 'Unknown',
-                        age: parseInt(values[cols.age]) || 0,
-                    });
-                }
-            }
-
-            if (newData.length > 0) {
-                this.data = newData.filter(emp => emp.department !== 'Unknown' && emp.salary > 0);
-                console.log(`Processed ${this.data.length} employees`);
-                this.updateMetrics();
-                this.updateCharts();
-            } else {
-                throw new Error('No valid data found in CSV.');
-            }
-        } catch (error) {
-            console.error('CSV processing error:', error);
-        }
+        }).filter(e => e.salario_anual > 0);
+        
+        console.log(`Processed ${this.data.length} employees`);
+        this.updateUI();
     }
 
-    findColumn(headers, possibilities) {
-        for (const poss of possibilities) {
-            const index = headers.indexOf(poss);
-            if (index !== -1) return index;
-        }
-        console.warn(`Could not find a column for: ${possibilities.join(' or ')}`);
-        return -1;
+    updateUI() {
+        this.updateMetrics();
+        this.createAllCharts();
     }
-
+    
     updateMetrics() {
-        if (this.data.length === 0) return;
-        
         const total = this.data.length;
-        const avgSalary = Math.round(this.data.reduce((sum, emp) => sum + emp.salary, 0) / total);
-        const avgSatisfaction = (this.data.reduce((sum, emp) => sum + emp.satisfaction, 0) / total);
-        const avgProductivity = Math.round(this.data.reduce((sum, emp) => sum + emp.productivity, 0) / total);
+        const avgSalary = Math.round(this.data.reduce((sum, e) => sum + e.salario_anual, 0) / total);
+        const avgSatisfaction = (this.data.reduce((sum, e) => sum + e.satisfaccion_laboral, 0) / total);
+        const avgProductivity = Math.round(this.data.reduce((sum, e) => sum + e.productividad_score, 0) / total);
 
-        this.updateElement('totalEmployees', total.toLocaleString());
-        this.updateElement('avgSalary', `$${avgSalary.toLocaleString()}`);
-        this.updateElement('avgSatisfaction', avgSatisfaction.toFixed(1));
-        this.updateElement('avgProductivity', avgProductivity);
-        
-        console.log('Metrics updated');
+        document.getElementById('totalEmployees').textContent = total.toLocaleString();
+        document.getElementById('avgSalary').textContent = `$${avgSalary.toLocaleString()}`;
+        document.getElementById('avgSatisfaction').textContent = avgSatisfaction.toFixed(1);
+        document.getElementById('avgProductivity').textContent = avgProductivity.toString();
     }
 
-    updateElement(id, value) {
-        const element = document.getElementById(id);
-        if (element) element.textContent = value;
-    }
-
-    createCharts() {
-        console.log('Creating charts...');
-        
-        if (typeof Chart === 'undefined') {
-            console.error('Chart.js not available for chart creation');
-            return;
-        }
-        
-        try {
-            this.createSalaryChart();
-            this.createScatterChart();
-            this.createGeoChart();
-            this.createAgeChart();
-            console.log('All charts created!');
-        } catch (error) {
-            console.error('Chart creation error:', error);
+    destroyChart(chartId) {
+        if (this.charts[chartId]) {
+            this.charts[chartId].destroy();
         }
     }
+    
+    createAllCharts() {
+        Object.keys(this.charts).forEach(id => this.destroyChart(id));
 
-    updateCharts() {
-        Object.values(this.charts).forEach(chart => {
-            if (chart && chart.destroy) chart.destroy();
-        });
-        this.charts = {};
-        this.createCharts();
+        this.createSalaryChart();
+        this.createSatisfactionChart();
+        this.createGeoChart();
+        this.createAgeHistogramChart();
+        this.createStressChart();
+        this.createSleepChart();
     }
 
     createSalaryChart() {
-        const canvas = document.getElementById('salaryChart');
-        if (!canvas) return;
+        const deptData = this.data.reduce((acc, e) => {
+            acc[e.departamento] = acc[e.departamento] || { total: 0, count: 0 };
+            acc[e.departamento].total += e.salario_anual;
+            acc[e.departamento].count++;
+            return acc;
+        }, {});
 
-        const deptSalaries = {};
-        this.data.forEach(emp => {
-            if (!deptSalaries[emp.department]) {
-                deptSalaries[emp.department] = { total: 0, count: 0 };
-            }
-            deptSalaries[emp.department].total += emp.salary;
-            deptSalaries[emp.department].count++;
-        });
-
-        const labels = Object.keys(deptSalaries).sort((a,b) => a.localeCompare(b));
-        const data = labels.map(dept => Math.round(deptSalaries[dept].total / deptSalaries[dept].count));
-
-        this.charts.salary = new Chart(canvas, {
+        const labels = Object.keys(deptData).sort();
+        const data = labels.map(dept => Math.round(deptData[dept].total / deptData[dept].count));
+        
+        this.charts.salary = new Chart('salaryChart', {
             type: 'bar',
             data: {
-                labels: labels,
+                labels,
                 datasets: [{
                     label: 'Average Salary',
-                    data: data,
-                    // MEJORA: Se usan colores de la paleta pastel
-                    backgroundColor: labels.map(dept => this.getDepartmentColor(dept) + 'B3'), // B3 = 70% opacidad
-                    borderColor: labels.map(dept => this.getDepartmentColor(dept)),
-                    borderWidth: 1,
-                    borderRadius: 4
+                    data,
+                    backgroundColor: labels.map(dept => this.getDeptColor(dept)),
+                    borderWidth: 0,
+                    barPercentage: 0.7,
+                    categoryPercentage: 0.8,
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { 
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: (context) => `Avg. Salary: $${context.parsed.y.toLocaleString()}`
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        ticks: { callback: value => '$' + value.toLocaleString() }
-                    }
+                plugins: { legend: { display: false } },
+                scales: { 
+                    y: { ticks: { callback: v => '$' + (v/1000) + 'K' } },
+                    x: { grid: { display: false } }
                 }
             }
         });
     }
 
-    createScatterChart() {
-        const canvas = document.getElementById('scatterChart');
-        if (!canvas) return;
-        
-        // MEJORA: Agrupamos los datos por departamento para crear un dataset por cada uno
-        const dataByDept = this.data.reduce((acc, emp) => {
-            if (!acc[emp.department]) {
-                acc[emp.department] = [];
-            }
-            acc[emp.department].push(emp);
+    createSatisfactionChart() {
+        const datasets = Object.entries(this.data.reduce((acc, e) => {
+            if (!acc[e.departamento]) acc[e.departamento] = [];
+            acc[e.departamento].push({ x: e.satisfaccion_laboral, y: e.productividad_score });
             return acc;
-        }, {});
+        }, {})).map(([dept, data]) => ({
+            label: dept,
+            data,
+            backgroundColor: this.getDeptColor(dept) + 'B3', // 70% opacity
+            borderColor: this.getDeptColor(dept),
+            borderWidth: 1,
+            pointRadius: 3,
+            pointHoverRadius: 5
+        }));
 
-        const datasets = Object.keys(dataByDept).map(dept => {
-            const color = this.getDepartmentColor(dept);
-            return {
-                label: dept,
-                data: dataByDept[dept].map(emp => ({
-                    x: emp.satisfaction,
-                    y: emp.productivity,
-                    // Pasamos datos adicionales para el tooltip
-                    salary: emp.salary 
-                })),
-                // MEJORA: Color por departamento y con transparencia para ver la densidad
-                backgroundColor: color + '99', // 99 = 60% opacidad
-                borderColor: color,
-                borderWidth: 1,
-                pointRadius: 4,
-                pointHoverRadius: 6,
-            };
-        });
-
-        this.charts.scatter = new Chart(canvas, {
+        this.charts.satisfaction = new Chart('satisfactionChart', {
             type: 'scatter',
-            data: { datasets: datasets },
+            data: { datasets },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    // MEJORA: Tooltip personalizado para mostrar más información
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const raw = context.raw;
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                label += `(Satisfaction: ${raw.x}, Productivity: ${raw.y})`;
-                                return label;
-                            },
-                            afterLabel: function(context) {
-                                const raw = context.raw;
-                                return `Salary: $${raw.salary.toLocaleString()}`;
-                            }
-                        }
-                    }
-                },
                 scales: {
-                    x: { 
-                        title: { display: true, text: 'Job Satisfaction (1-10)' },
-                        grid: { color: 'rgba(0, 0, 0, 0.05)' }
-                    },
-                    y: { 
-                        title: { display: true, text: 'Productivity Score (0-100)' },
-                        grid: { color: 'rgba(0, 0, 0, 0.05)' }
-                    }
+                    x: { title: { display: true, text: 'Job Satisfaction' } },
+                    y: { title: { display: true, text: 'Productivity Score' } }
                 }
             }
         });
     }
 
     createGeoChart() {
-        const canvas = document.getElementById('geoChart');
-        if (!canvas) return;
+        const zoneData = this.data.reduce((acc, e) => {
+            acc[e.zona_geografica] = (acc[e.zona_geografica] || 0) + 1;
+            return acc;
+        }, {});
 
-        const zoneCounts = {};
-        this.data.forEach(emp => {
-            zoneCounts[emp.zone] = (zoneCounts[emp.zone] || 0) + 1;
-        });
-
-        this.charts.geo = new Chart(canvas, {
-            type: 'doughnut',
+        const sortedZones = Object.entries(zoneData).sort((a, b) => b[1] - a[1]);
+        
+        this.charts.geo = new Chart('geoChart', {
+            type: 'bar',
             data: {
-                labels: Object.keys(zoneCounts),
+                labels: sortedZones.map(z => z[0]),
                 datasets: [{
-                    data: Object.values(zoneCounts),
-                    // MEJORA: Se usa la paleta de colores pastel
-                    backgroundColor: this.pastelColors,
-                    borderColor: '#ffffff',
-                    borderWidth: 2
+                    label: 'Number of Employees',
+                    data: sortedZones.map(z => z[1]),
+                    backgroundColor: this.colorPalette.lightBlue,
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '60%',
-                plugins: {
-                    legend: {
-                        position: 'right'
-                    }
-                }
+                indexAxis: 'y', // Makes it a horizontal bar chart
+                plugins: { legend: { display: false } },
+                scales: { x: { grid: { display: false } } }
             }
         });
     }
 
-    createAgeChart() {
-        const canvas = document.getElementById('ageChart');
-        if (!canvas) return;
+    createAgeHistogramChart() {
+        const ageGroups = this.data.reduce((acc, e) => {
+            const bin = Math.floor(e.edad / 5) * 5;
+            acc[bin] = (acc[bin] || 0) + 1;
+            return acc;
+        }, {});
 
-        const ageGroups = { '< 30': 0, '30-40': 0, '40-50': 0, '50+': 0 };
-        
-        this.data.forEach(emp => {
-            if (emp.age < 30) ageGroups['< 30']++;
-            else if (emp.age < 40) ageGroups['30-40']++;
-            else if (emp.age < 50) ageGroups['40-50']++;
-            else ageGroups['50+']++;
-        });
+        const labels = Object.keys(ageGroups).sort((a,b) => a - b).map(bin => `${bin}-${parseInt(bin) + 4}`);
+        const data = Object.keys(ageGroups).sort((a,b) => a - b).map(bin => ageGroups[bin]);
 
-        this.charts.age = new Chart(canvas, {
-            type: 'pie',
+        this.charts.age = new Chart('ageHistogramChart', {
+            type: 'bar',
             data: {
-                labels: Object.keys(ageGroups),
+                labels,
                 datasets: [{
-                    data: Object.values(ageGroups),
-                    // MEJORA: Se usa la paleta de colores pastel
-                    backgroundColor: this.pastelColors,
-                    borderColor: '#ffffff',
-                    borderWidth: 2
+                    label: 'Employee Count',
+                    data,
+                    backgroundColor: this.colorPalette.green
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right'
-                    }
+                plugins: { legend: { display: false } },
+                scales: { x: { grid: { display: false } } }
+            }
+        });
+    }
+    
+    createStressChart() {
+        const modalityData = this.data.reduce((acc, e) => {
+            if (!acc[e.modalidad_trabajo]) acc[e.modalidad_trabajo] = [];
+            acc[e.modalidad_trabajo].push(e.nivel_estres);
+            return acc;
+        }, {});
+        
+        this.charts.stress = new Chart('stressChart', {
+            type: 'boxplot',
+            data: {
+                labels: Object.keys(modalityData),
+                datasets: [{
+                    label: 'Stress Level Distribution',
+                    data: Object.values(modalityData),
+                    backgroundColor: this.colorPalette.orange + '99',
+                    borderColor: this.colorPalette.orange,
+                    borderWidth: 1,
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: { y: { title: { display: true, text: 'Stress Level (1-10)' } } }
+            }
+        });
+    }
+
+    createSleepChart() {
+        this.charts.sleep = new Chart('sleepChart', {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Employees',
+                    data: this.data.map(e => ({ x: e.horas_sueno_noche, y: e.nivel_estres })),
+                    backgroundColor: this.colorPalette.purple + '99',
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { title: { display: true, text: 'Hours of Sleep per Night' } },
+                    y: { title: { display: true, text: 'Stress Level' } }
                 }
             }
         });
