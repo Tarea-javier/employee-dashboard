@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualización Interactiva de Productos | D3.js</title>
+    <title>Dashboard de Análisis de Productos | D3.js</title>
     
     <!-- Google Fonts: Roboto -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,7 +17,7 @@
 
     <header class="main-header">
         <h1>Análisis de Productos de Amazon</h1>
-        <p>Una exploración interactiva de precios, calificaciones y popularidad construida con D3.js.</p>
+        <p>Dashboard interactivo sobre precios, calificaciones y descuentos.</p>
     </header>
 
     <main class="container">
@@ -34,18 +34,23 @@
         <div class="visualizations-grid">
             
             <div id="barchart-container" class="viz-card">
-                <h2 class="viz-title">Productos por Categoría</h2>
+                <h2 class="viz-title">Volumen de Productos por Categoría</h2>
                 <div class="chart-wrapper" id="barchart"></div>
             </div>
 
+            <div id="discount-container" class="viz-card">
+                <h2 class="viz-title">Descuento Promedio por Categoría</h2>
+                <div class="chart-wrapper" id="discount-chart"></div>
+            </div>
+            
             <div id="scatterplot-container" class="viz-card">
                 <h2 class="viz-title">Calificación vs. Popularidad</h2>
                 <div class="chart-wrapper" id="scatterplot"></div>
                  <div class="legend">
-                    <span>Categoría de Precio:</span>
-                    <span class="legend-item"><span class="legend-color" style="background-color: #66c2a5;"></span> Presupuesto</span>
-                    <span class="legend-item"><span class="legend-color" style="background-color: #fc8d62;"></span> Medio</span>
-                    <span class="legend-item"><span class="legend-color" style="background-color: #8da0cb;"></span> Premium</span>
+                    <span>Precio:</span>
+                    <span class="legend-item"><span class="legend-color" style="background-color: var(--color-budget);"></span>Presupuesto</span>
+                    <span class="legend-item"><span class="legend-color" style="background-color: var(--color-mid);"></span>Medio</span>
+                    <span class="legend-item"><span class="legend-color" style="background-color: var(--color-premium);"></span>Premium</span>
                 </div>
             </div>
             
@@ -58,7 +63,7 @@
     </main>
     
     <footer class="main-footer">
-        <p>Proyecto desplegado en GitHub Pages. Creado con D3.js para visualizaciones interactivas.</p>
+        <!-- Contenido del footer eliminado según solicitud -->
     </footer>
 
     <!-- Tooltip para mostrar información al pasar el ratón -->
