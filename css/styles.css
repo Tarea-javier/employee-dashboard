@@ -1,182 +1,44 @@
-/* Estilo Minimalista y Profesional para el Dashboard */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
+/* Paleta de colores pastel */
 :root {
-    --primary-blue: #0077b6;
-    --text-dark: #212529;
-    --text-light: #6c757d;
-    --background-main: #f8f9fa;
-    --background-card: #ffffff;
-    --border-color: #dee2e6;
-    --danger-red: #e74c3c;
-
-    --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.05);
-    --shadow-medium: 0 5px 15px rgba(0, 0, 0, 0.08);
-    --radius: 12px;
-    --spacing-md: 24px;
-    --spacing-lg: 32px;
+    --bg-color: #FFFFFF;
+    --text-color: #333333;
+    --primary-accent: #82aaff; /* Azul pastel */
+    --secondary-accent: #c3e88d; /* Verde pastel */
+    --border-color: #E0E0E0;
+    --font-family: 'Roboto', sans-serif;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background-color: var(--background-main);
-    color: var(--text-dark);
-    line-height: 1.6;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-family);
+    margin: 0;
+    padding: 2rem;
 }
 
-.container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: var(--spacing-lg);
-}
+/* ... Estilos para header, main, footer, etc. ... */
 
-.header {
-    text-align: center;
-    margin-bottom: var(--spacing-lg);
-}
-
-.header h1 {
-    font-size: 2.5rem;
-    font-weight: 600;
-}
-
-.header p {
-    font-size: 1.1rem;
-    color: var(--text-light);
-}
-
-.metrics {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-lg);
-}
-
-.metric-card {
-    background: var(--background-card);
-    padding: var(--spacing-md);
-    border-radius: var(--radius);
-    border: 1px solid var(--border-color);
-    text-align: center;
-    transition: all 0.2s ease-in-out;
-}
-
-.metric-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-medium);
-}
-
-.metric-value {
-    font-size: 2.75rem;
-    font-weight: 600;
-    color: var(--primary-blue);
-    line-height: 1.1;
-}
-
-.metric-label {
-    font-size: 0.8rem;
-    color: var(--text-light);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-/* --- ESTILOS PARA FILTROS (NUEVO) --- */
-.filters {
-    background: var(--background-card);
-    padding: 16px var(--spacing-md);
-    border-radius: var(--radius);
-    border: 1px solid var(--border-color);
-    margin-bottom: var(--spacing-lg);
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-md);
-    align-items: center;
-}
-
-.filter-group {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.filter-group label {
-    font-weight: 500;
-    color: var(--text-dark);
-    font-size: 0.95rem;
-}
-
-.filter-group select {
-    padding: 8px 12px;
+.viz-container {
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    background-color: #fff;
-    font-size: 0.95rem;
-    min-width: 180px;
-    cursor: pointer;
-    transition: border-color 0.2s;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    background-color: #fdfdfd;
 }
 
-.filter-group select:hover {
-    border-color: var(--primary-blue);
-}
+/* Estilos para los ejes y texto de los gráficos SVG */
+.axis-label { font-size: 14px; fill: #555; }
+.tick text { font-size: 12px; }
 
-.reset-button {
-    margin-left: auto; /* Empuja el botón a la derecha */
-    padding: 8px 16px;
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: var(--danger-red);
-    background-color: transparent;
-    border: 1px solid var(--danger-red);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.reset-button:hover {
-    background-color: var(--danger-red);
-    color: #fff;
-}
-
-/* --- FIN ESTILOS PARA FILTROS --- */
-
-/* CORREGIDO: Layout de 2 columnas para pantallas grandes */
-.charts-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--spacing-md);
-}
-
-/* A partir de 992px de ancho, pasamos a 2 columnas */
-@media (min-width: 992px) {
-    .charts-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-.chart-card {
-    background: var(--background-card);
-    padding: var(--spacing-md);
-    border-radius: var(--radius);
+/* Estilo para el Tooltip */
+#tooltip {
+    position: absolute;
+    background-color: white;
     border: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
+    border-radius: 4px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    pointer-events: none; /* Importante para que no interfiera con el hover */
 }
 
-.chart-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-dark);
-    margin-bottom: 16px;
-}
-
-/* CORREGIDO: Ajuste de altura para proporciones rectangulares */
-.chart-container {
-    position: relative;
-    height: 280px; /* Altura reducida para un look más panorámico */
-    width: 100%;
-}
+.hidden { display: none; }
