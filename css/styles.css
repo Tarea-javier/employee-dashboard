@@ -1,24 +1,27 @@
 /* ============================================= */
-/*          CONFIGURACIÓN GENERAL Y PALETA       */
+/*          CONFIGURACIÓN PROFESIONAL            */
 /* ============================================= */
 
 :root {
-    --bg-color: #f8f9fa;
+    --bg-color: #f4f5f7; /* Un gris muy claro para el fondo */
     --card-bg-color: #ffffff;
-    --text-color-primary: #202124;
-    --text-color-secondary: #5f6368;
-    --border-color: #dfe1e5;
-    --shadow-color: rgba(0, 0, 0, 0.08);
+    --text-color-primary: #172b4d; /* Azul oscuro para texto principal */
+    --text-color-secondary: #6b778c; /* Gris para texto secundario */
+    --border-color: #dfe1e6;
+    --shadow-color: rgba(9, 30, 66, 0.15);
+    --primary-accent: #0052cc; /* Azul primario para interacciones */
+    --primary-accent-hover: #0065ff;
 
-    /* Colores pastel para datos (tomados de ColorBrewer) */
-    --color-budget: #66c2a5;
-    --color-mid: #fc8d62;
-    --color-premium: #8da0cb;
-    --color-default-bar: #8da0cb;
-    --color-hover-bar: #617ca1;
+    /* Paleta de datos refinada */
+    --color-budget: #4dd0e1;  /* Cyan */
+    --color-mid: #ffab40;     /* Naranja */
+    --color-premium: #7e57c2; /* Morado */
+    --color-default-bar: #a7b0be; /* Gris neutral para barras */
+    --color-hover-bar: var(--primary-accent);
 
     --font-family: 'Roboto', sans-serif;
     --transition-speed: 0.3s;
+    --border-radius: 8px;
 }
 
 /* Reseteo y estilo base del body */
@@ -30,6 +33,8 @@ body {
     padding: 0;
     font-size: 16px;
     line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 /* ============================================= */
@@ -37,35 +42,37 @@ body {
 /* ============================================= */
 
 .container {
-    max-width: 1400px;
+    max-width: 1600px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 1.5rem 2rem;
 }
 
 .main-header {
     text-align: center;
-    padding: 2rem 1rem;
-    border-bottom: 1px solid var(--border-color);
+    padding: 2.5rem 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .main-header h1 {
-    font-size: 2.5rem;
+    font-size: 2.8rem;
     font-weight: 700;
     margin-bottom: 0.5rem;
 }
 
 .main-header p {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     color: var(--text-color-secondary);
-    max-width: 600px;
+    max-width: 650px;
     margin: 0 auto;
+    font-weight: 300;
 }
 
 .controls-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.5rem 0;
+    padding: 1rem 0;
+    margin-bottom: 1.5rem;
     flex-wrap: wrap;
     gap: 1rem;
 }
@@ -73,14 +80,14 @@ body {
 #info-box {
     background-color: var(--card-bg-color);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     padding: 0.75rem 1.5rem;
 }
 
 #info-box h3 {
     margin: 0;
-    font-size: 1.2rem;
-    color: var(--text-color-primary);
+    font-size: 1.1rem;
+    font-weight: 700;
 }
 
 #info-box p {
@@ -89,25 +96,25 @@ body {
 }
 
 #reset-button {
-    background-color: var(--color-budget);
+    background-color: var(--primary-accent);
     color: white;
     border: none;
     padding: 0.8rem 1.5rem;
     font-size: 1rem;
     font-weight: 700;
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     cursor: pointer;
-    transition: background-color var(--transition-speed);
+    transition: background-color var(--transition-speed), transform var(--transition-speed);
 }
 
 #reset-button:hover {
-    background-color: #55a890;
+    background-color: var(--primary-accent-hover);
+    transform: translateY(-2px);
 }
 
 .visualizations-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
     width: 100%;
 }
@@ -115,39 +122,28 @@ body {
 .viz-card {
     background-color: var(--card-bg-color);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
+    border-radius: var(--border-radius);
     padding: 1.5rem;
     box-shadow: 0 1px 3px var(--shadow-color);
-    transition: box-shadow var(--transition-speed);
+    transition: all var(--transition-speed) ease-in-out;
 }
 
 .viz-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-}
-
-#barchart-container {
-    grid-column: 1 / 3; /* Ocupa todo el ancho en la primera fila */
-}
-
-#scatterplot-container {
-    grid-column: 1 / 2; /* Ocupa la primera columna en la segunda fila */
-}
-
-#histogram-container {
-    grid-column: 2 / 3; /* Ocupa la segunda columna en la segunda fila */
+    box-shadow: 0 6px 15px var(--shadow-color);
+    transform: translateY(-5px);
 }
 
 .viz-title {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
+    font-weight: 700;
     margin-top: 0;
     margin-bottom: 1rem;
     text-align: center;
-    color: var(--text-color-primary);
 }
 
 .chart-wrapper {
     width: 100%;
-    height: 350px; /* Altura base para los contenedores de gráficos */
+    height: 320px;
 }
 
 /* ============================================= */
@@ -156,7 +152,7 @@ body {
 
 .tick text {
     font-family: var(--font-family);
-    font-size: 11px;
+    font-size: 12px;
     fill: var(--text-color-secondary);
 }
 
@@ -173,25 +169,25 @@ body {
 .bar {
     fill: var(--color-default-bar);
     transition: fill var(--transition-speed);
+    cursor: pointer;
 }
 
 .bar:hover {
     fill: var(--color-hover-bar);
-    cursor: pointer;
 }
 
 .scatter-dot {
     stroke-width: 1px;
     stroke: rgba(0,0,0,0.2);
-    opacity: 0.7;
+    opacity: 0.8;
     transition: opacity var(--transition-speed), transform var(--transition-speed);
+    cursor: pointer;
 }
 
 .scatter-dot:hover {
     opacity: 1;
-    transform: scale(1.2);
+    transform: scale(1.3);
     stroke: #000;
-    cursor: pointer;
 }
 
 /* ============================================= */
@@ -200,34 +196,44 @@ body {
 
 #tooltip {
     position: absolute;
-    background-color: rgba(255, 255, 255, 0.95);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 1rem;
+    background-color: var(--text-color-primary);
+    color: white;
+    border-radius: var(--border-radius);
+    padding: 0.75rem 1rem;
     font-size: 0.9rem;
-    pointer-events: none; /* Muy importante */
-    box-shadow: 0 4px 8px var(--shadow-color);
+    pointer-events: none;
+    box-shadow: 0 4px 8px rgba(9, 30, 66, 0.25);
     transition: opacity 0.2s;
-    max-width: 280px;
+    max-width: 300px;
+    z-index: 10;
 }
 
 #tooltip h4 {
     margin: 0 0 0.5rem 0;
     font-size: 1rem;
-    color: var(--text-color-primary);
+    font-weight: 700;
+    border-bottom: 1px solid #4b5b7d;
+    padding-bottom: 0.5rem;
 }
 
 #tooltip p {
-    margin: 0.25rem 0;
-    color: var(--text-color-secondary);
+    margin: 0.3rem 0;
+}
+
+#tooltip p strong {
+    color: #c1c7d0;
 }
 
 .hidden {
-    display: none !important;
+    opacity: 0;
+    visibility: hidden;
 }
 
 .legend {
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
     margin-top: 1rem;
     font-size: 0.9rem;
     color: var(--text-color-secondary);
@@ -235,27 +241,21 @@ body {
 .legend-item {
     display: inline-flex;
     align-items: center;
-    margin: 0 10px;
+    gap: 5px;
 }
 .legend-color {
-    display: inline-block;
-    width: 15px;
-    height: 15px;
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
-    margin-right: 5px;
 }
 
 /* ============================================= */
 /*                   RESPONSIVE                  */
 /* ============================================= */
 
-@media (max-width: 992px) {
+@media (max-width: 1200px) {
     .visualizations-grid {
-        grid-template-columns: 1fr; /* Apila los gráficos en una sola columna */
-        grid-template-rows: auto auto auto;
-    }
-    #barchart-container, #scatterplot-container, #histogram-container {
-        grid-column: 1 / 2; /* Cada uno ocupa el ancho completo */
+        grid-template-columns: 1fr;
     }
 }
 
@@ -264,9 +264,13 @@ body {
         padding: 1rem;
     }
     .main-header h1 {
-        font-size: 2rem;
+        font-size: 2.2rem;
     }
     .chart-wrapper {
-        height: 300px; /* Reduce la altura en pantallas pequeñas */
+        height: 300px;
+    }
+    .controls-container {
+        flex-direction: column;
+        align-items: stretch;
     }
 }
