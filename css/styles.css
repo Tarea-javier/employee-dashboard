@@ -1,44 +1,272 @@
-/* Paleta de colores pastel */
+/* ============================================= */
+/*          CONFIGURACIÓN GENERAL Y PALETA       */
+/* ============================================= */
+
 :root {
-    --bg-color: #FFFFFF;
-    --text-color: #333333;
-    --primary-accent: #82aaff; /* Azul pastel */
-    --secondary-accent: #c3e88d; /* Verde pastel */
-    --border-color: #E0E0E0;
+    --bg-color: #f8f9fa;
+    --card-bg-color: #ffffff;
+    --text-color-primary: #202124;
+    --text-color-secondary: #5f6368;
+    --border-color: #dfe1e5;
+    --shadow-color: rgba(0, 0, 0, 0.08);
+
+    /* Colores pastel para datos (tomados de ColorBrewer) */
+    --color-budget: #66c2a5;
+    --color-mid: #fc8d62;
+    --color-premium: #8da0cb;
+    --color-default-bar: #8da0cb;
+    --color-hover-bar: #617ca1;
+
     --font-family: 'Roboto', sans-serif;
+    --transition-speed: 0.3s;
 }
 
+/* Reseteo y estilo base del body */
 body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
     font-family: var(--font-family);
+    background-color: var(--bg-color);
+    color: var(--text-color-primary);
     margin: 0;
+    padding: 0;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+/* ============================================= */
+/*          MAQUETACIÓN Y CONTENEDORES         */
+/* ============================================= */
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
     padding: 2rem;
 }
 
-/* ... Estilos para header, main, footer, etc. ... */
+.main-header {
+    text-align: center;
+    padding: 2rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
 
-.viz-container {
+.main-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.main-header p {
+    font-size: 1.1rem;
+    color: var(--text-color-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.controls-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 0;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+#info-box {
+    background-color: var(--card-bg-color);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    padding: 1.5rem;
-    margin-top: 2rem;
-    background-color: #fdfdfd;
+    padding: 0.75rem 1.5rem;
 }
 
-/* Estilos para los ejes y texto de los gráficos SVG */
-.axis-label { font-size: 14px; fill: #555; }
-.tick text { font-size: 12px; }
+#info-box h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--text-color-primary);
+}
 
-/* Estilo para el Tooltip */
+#info-box p {
+    margin: 0;
+    color: var(--text-color-secondary);
+}
+
+#reset-button {
+    background-color: var(--color-budget);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color var(--transition-speed);
+}
+
+#reset-button:hover {
+    background-color: #55a890;
+}
+
+.visualizations-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.viz-card {
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px var(--shadow-color);
+    transition: box-shadow var(--transition-speed);
+}
+
+.viz-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+#barchart-container {
+    grid-column: 1 / 3; /* Ocupa todo el ancho en la primera fila */
+}
+
+#scatterplot-container {
+    grid-column: 1 / 2; /* Ocupa la primera columna en la segunda fila */
+}
+
+#histogram-container {
+    grid-column: 2 / 3; /* Ocupa la segunda columna en la segunda fila */
+}
+
+.viz-title {
+    font-size: 1.3rem;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    text-align: center;
+    color: var(--text-color-primary);
+}
+
+.chart-wrapper {
+    width: 100%;
+    height: 350px; /* Altura base para los contenedores de gráficos */
+}
+
+/* ============================================= */
+/*                 ESTILOS SVG Y D3              */
+/* ============================================= */
+
+.tick text {
+    font-family: var(--font-family);
+    font-size: 11px;
+    fill: var(--text-color-secondary);
+}
+
+.axis-label {
+    font-size: 14px;
+    font-weight: 700;
+    fill: var(--text-color-primary);
+}
+
+.domain, .tick line {
+    stroke: var(--border-color);
+}
+
+.bar {
+    fill: var(--color-default-bar);
+    transition: fill var(--transition-speed);
+}
+
+.bar:hover {
+    fill: var(--color-hover-bar);
+    cursor: pointer;
+}
+
+.scatter-dot {
+    stroke-width: 1px;
+    stroke: rgba(0,0,0,0.2);
+    opacity: 0.7;
+    transition: opacity var(--transition-speed), transform var(--transition-speed);
+}
+
+.scatter-dot:hover {
+    opacity: 1;
+    transform: scale(1.2);
+    stroke: #000;
+    cursor: pointer;
+}
+
+/* ============================================= */
+/*             TOOLTIP Y LEYENDA                 */
+/* ============================================= */
+
 #tooltip {
     position: absolute;
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.95);
     border: 1px solid var(--border-color);
-    border-radius: 4px;
-    padding: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    pointer-events: none; /* Importante para que no interfiera con el hover */
+    border-radius: 8px;
+    padding: 1rem;
+    font-size: 0.9rem;
+    pointer-events: none; /* Muy importante */
+    box-shadow: 0 4px 8px var(--shadow-color);
+    transition: opacity 0.2s;
+    max-width: 280px;
 }
 
-.hidden { display: none; }
+#tooltip h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    color: var(--text-color-primary);
+}
+
+#tooltip p {
+    margin: 0.25rem 0;
+    color: var(--text-color-secondary);
+}
+
+.hidden {
+    display: none !important;
+}
+
+.legend {
+    text-align: center;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-color-secondary);
+}
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    margin: 0 10px;
+}
+.legend-color {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+/* ============================================= */
+/*                   RESPONSIVE                  */
+/* ============================================= */
+
+@media (max-width: 992px) {
+    .visualizations-grid {
+        grid-template-columns: 1fr; /* Apila los gráficos en una sola columna */
+        grid-template-rows: auto auto auto;
+    }
+    #barchart-container, #scatterplot-container, #histogram-container {
+        grid-column: 1 / 2; /* Cada uno ocupa el ancho completo */
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    .main-header h1 {
+        font-size: 2rem;
+    }
+    .chart-wrapper {
+        height: 300px; /* Reduce la altura en pantallas pequeñas */
+    }
+}
