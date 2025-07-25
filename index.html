@@ -1,111 +1,74 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Analytics</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
+    <title>Visualización Interactiva de Productos | D3.js</title>
+    
+    <!-- Google Fonts: Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <!-- Hoja de estilos CSS -->
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <h1>Employee Analytics</h1>
-            <p>Data visualization for key employee metrics</p>
-        </header>
 
-        <!-- Dashboard -->
-        <div id="dashboard">
-            <!-- Metrics -->
-            <section class="metrics">
-                <div class="metric-card">
-                    <div class="metric-value" id="totalEmployees">--</div>
-                    <div class="metric-label">Total Employees</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value" id="avgSalary">--</div>
-                    <div class="metric-label">Average Salary</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value" id="avgSatisfaction">--</div>
-                    <div class="metric-label">Job Satisfaction</div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-value" id="avgProductivity">--</div>
-                    <div class="metric-label">Productivity</div>
-                </div>
-            </section>
+    <header class="main-header">
+        <h1>Análisis de Productos de Amazon</h1>
+        <p>Una exploración interactiva de precios, calificaciones y popularidad construida con D3.js.</p>
+    </header>
 
-            <!-- ============================================= -->
-            <!-- ================ NUEVA SECCIÓN ================ -->
-            <!-- ============================================= -->
-            <section class="filters">
-                <div class="filter-group">
-                    <label for="filterDepartment">Departamento:</label>
-                    <select id="filterDepartment">
-                        <option value="all">Todos</option>
-                        <!-- Opciones se llenarán con JS -->
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="filterGeoZone">Zona Geográfica:</label>
-                    <select id="filterGeoZone">
-                        <option value="all">Todas</option>
-                        <!-- Opciones se llenarán con JS -->
-                    </select>
-                </div>
-                <button id="resetFilters" class="reset-button">Limpiar Filtros</button>
-            </section>
-            <!-- ============================================= -->
-            <!-- ================ FIN NUEVA SECCIÓN ============ -->
-            <!-- ============================================= -->
-
-            <!-- Charts Grid -->
-            <section class="charts-grid">
-                <div class="chart-card">
-                    <div class="chart-title">Average Salary by Department</div>
-                    <div class="chart-container">
-                        <canvas id="salaryChart"></canvas>
-                    </div>
-                </div>
-                <div class="chart-card">
-                    <div class="chart-title">Satisfaction vs Productivity</div>
-                    <div class="chart-container">
-                        <canvas id="satisfactionChart"></canvas>
-                    </div>
-                </div>
-                <div class="chart-card">
-                    <div class="chart-title">Employees by Geographic Zone</div>
-                    <div class="chart-container">
-                        <canvas id="geoChart"></canvas>
-                    </div>
-                </div>
-                <div class="chart-card">
-                    <div class="chart-title">Employee Age Distribution</div>
-                    <div class="chart-container">
-                        <canvas id="ageHistogramChart"></canvas>
-                    </div>
-                </div>
-                <div class="chart-card">
-                    <div class="chart-title">Average Stress by Work Modality</div>
-                    <div class="chart-container">
-                        <canvas id="stressChart"></canvas>
-                    </div>
-                </div>
-                <div class="chart-card">
-                    <div class="chart-title">Sleep vs Stress with Trendline</div>
-                    <div class="chart-container">
-                        <canvas id="sleepChart"></canvas>
-                    </div>
-                </div>
-            </section>
+    <main class="container">
+        <!-- Controles y Filtros -->
+        <div class="controls-container">
+            <div id="info-box">
+                <h3 id="info-title">Todos los Productos</h3>
+                <p>Mostrando <strong id="product-count">N/A</strong> productos. Haz clic en una categoría para filtrar.</p>
+            </div>
+            <button id="reset-button" class="hidden">Mostrar Todas las Categorías</button>
         </div>
-    </div>
+        
+        <!-- Contenedor principal para las visualizaciones -->
+        <div class="visualizations-grid">
+            
+            <div id="barchart-container" class="viz-card">
+                <h2 class="viz-title">Productos por Categoría</h2>
+                <div class="chart-wrapper" id="barchart"></div>
+            </div>
 
-    <!-- Scripts (sin cambios, solo la librería principal) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-    <!-- Tu script principal -->
+            <div id="scatterplot-container" class="viz-card">
+                <h2 class="viz-title">Calificación vs. Popularidad</h2>
+                <div class="chart-wrapper" id="scatterplot"></div>
+                 <div class="legend">
+                    <span>Categoría de Precio:</span>
+                    <span class="legend-item"><span class="legend-color" style="background-color: #66c2a5;"></span> Presupuesto</span>
+                    <span class="legend-item"><span class="legend-color" style="background-color: #fc8d62;"></span> Medio</span>
+                    <span class="legend-item"><span class="legend-color" style="background-color: #8da0cb;"></span> Premium</span>
+                </div>
+            </div>
+            
+            <div id="histogram-container" class="viz-card">
+                <h2 class="viz-title">Distribución de Calificaciones</h2>
+                <div class="chart-wrapper" id="histogram"></div>
+            </div>
+
+        </div>
+    </main>
+    
+    <footer class="main-footer">
+        <p>Proyecto desplegado en GitHub Pages. Creado con D3.js para visualizaciones interactivas.</p>
+    </footer>
+
+    <!-- Tooltip para mostrar información al pasar el ratón -->
+    <div id="tooltip" class="hidden"></div>
+
+    <!-- Librería D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    
+    <!-- Lógica principal de las visualizaciones -->
     <script src="js/main.js"></script>
+
 </body>
 </html>
