@@ -8,72 +8,177 @@
     <!-- Google Fonts: Roboto -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     
     <!-- Hoja de estilos CSS -->
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+    <!-- Iconos SVG minimalistas -->
+    <svg style="display: none;">
+        <defs>
+            <!-- Icono de información -->
+            <symbol id="info-icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 16v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </symbol>
+            
+            <!-- Icono de reset/actualizar -->
+            <symbol id="reset-icon" viewBox="0 0 24 24">
+                <path d="M23 4v6h-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </symbol>
+            
+            <!-- Icono de gráfico de barras -->
+            <symbol id="bar-chart-icon" viewBox="0 0 24 24">
+                <line x1="12" y1="20" x2="12" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="18" y1="20" x2="18" y2="4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="6" y1="20" x2="6" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </symbol>
+            
+            <!-- Icono de descuento -->
+            <symbol id="discount-icon" viewBox="0 0 24 24">
+                <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="2"/>
+                <path d="M18.09 10.37A6 6 0 1 1 10.37 18.09" fill="none" stroke="currentColor" stroke-width="2"/>
+                <line x1="12" y1="12" x2="12" y2="12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </symbol>
+            
+            <!-- Icono de scatter plot -->
+            <symbol id="scatter-icon" viewBox="0 0 24 24">
+                <circle cx="18" cy="6" r="2" fill="currentColor"/>
+                <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                <circle cx="6" cy="18" r="2" fill="currentColor"/>
+                <circle cx="6" cy="6" r="2" fill="currentColor"/>
+                <circle cx="18" cy="18" r="2" fill="currentColor"/>
+            </symbol>
+            
+            <!-- Icono de histograma -->
+            <symbol id="histogram-icon" viewBox="0 0 24 24">
+                <rect x="3" y="8" width="4" height="13" fill="none" stroke="currentColor" stroke-width="2"/>
+                <rect x="7" y="6" width="4" height="15" fill="none" stroke="currentColor" stroke-width="2"/>
+                <rect x="11" y="11" width="4" height="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                <rect x="15" y="4" width="4" height="17" fill="none" stroke="currentColor" stroke-width="2"/>
+            </symbol>
+        </defs>
+    </svg>
 
     <header class="main-header">
         <h1>Análisis de Productos de Amazon</h1>
-        <p>Dashboard interactivo sobre precios, calificaciones y descuentos.</p>
+        <p>Dashboard interactivo sobre precios, calificaciones y descuentos</p>
     </header>
-
+    
     <main class="container">
         <!-- Controles y Filtros -->
         <div class="controls-container">
             <div id="info-box">
-                <h3 id="info-title">Todos los Productos</h3>
-                <p>Mostrando <strong id="product-count">N/A</strong> productos. Haz clic en una categoría para filtrar.</p>
+                <svg class="info-icon">
+                    <use href="#info-icon"></use>
+                </svg>
+                <div class="info-content">
+                    <h3 id="info-title">Todos los Productos</h3>
+                    <p>Mostrando <strong id="product-count">N/A</strong> productos. Haz clic en una categoría para filtrar.</p>
+                </div>
             </div>
-            <button id="reset-button" class="hidden">Mostrar Todas las Categorías</button>
+            <button id="reset-button" class="hidden">
+                <svg class="reset-icon">
+                    <use href="#reset-icon"></use>
+                </svg>
+                Mostrar Todas las Categorías
+            </button>
         </div>
         
         <!-- Contenedor principal para las visualizaciones -->
         <div class="visualizations-grid">
             
             <div id="barchart-container" class="viz-card">
-                <h2 class="viz-title">Volumen de Productos por Categoría</h2>
-                <div class="chart-wrapper" id="barchart"></div>
+                <h2 class="viz-title">
+                    <svg class="viz-icon">
+                        <use href="#bar-chart-icon"></use>
+                    </svg>
+                    Volumen de Productos por Categoría
+                </h2>
+                <div class="chart-wrapper" id="barchart">
+                    <div class="chart-loading">
+                        <div class="loading-spinner"></div>
+                        Cargando datos...
+                    </div>
+                </div>
             </div>
-
+            
             <div id="discount-container" class="viz-card">
-                <h2 class="viz-title">Descuento Promedio por Categoría</h2>
-                <div class="chart-wrapper" id="discount-chart"></div>
+                <h2 class="viz-title">
+                    <svg class="viz-icon">
+                        <use href="#discount-icon"></use>
+                    </svg>
+                    Descuento Promedio por Categoría
+                </h2>
+                <div class="chart-wrapper" id="discount-chart">
+                    <div class="chart-loading">
+                        <div class="loading-spinner"></div>
+                        Cargando datos...
+                    </div>
+                </div>
             </div>
             
             <div id="scatterplot-container" class="viz-card">
-                <h2 class="viz-title">Calificación vs. Popularidad</h2>
-                <div class="chart-wrapper" id="scatterplot"></div>
-                 <div class="legend">
-                    <span>Precio:</span>
-                    <span class="legend-item"><span class="legend-color" style="background-color: var(--color-budget);"></span>Presupuesto</span>
-                    <span class="legend-item"><span class="legend-color" style="background-color: var(--color-mid);"></span>Medio</span>
-                    <span class="legend-item"><span class="legend-color" style="background-color: var(--color-premium);"></span>Premium</span>
+                <h2 class="viz-title">
+                    <svg class="viz-icon">
+                        <use href="#scatter-icon"></use>
+                    </svg>
+                    Calificación vs. Popularidad
+                </h2>
+                <div class="chart-wrapper" id="scatterplot">
+                    <div class="chart-loading">
+                        <div class="loading-spinner"></div>
+                        Cargando datos...
+                    </div>
+                </div>
+                <div class="legend">
+                    <span>Rango de Precio:</span>
+                    <span class="legend-item">
+                        <span class="legend-color" style="background-color: var(--color-budget);"></span>
+                        Presupuesto
+                    </span>
+                    <span class="legend-item">
+                        <span class="legend-color" style="background-color: var(--color-mid);"></span>
+                        Medio
+                    </span>
+                    <span class="legend-item">
+                        <span class="legend-color" style="background-color: var(--color-premium);"></span>
+                        Premium
+                    </span>
                 </div>
             </div>
             
             <div id="histogram-container" class="viz-card">
-                <h2 class="viz-title">Distribución de Calificaciones</h2>
-                <div class="chart-wrapper" id="histogram"></div>
+                <h2 class="viz-title">
+                    <svg class="viz-icon">
+                        <use href="#histogram-icon"></use>
+                    </svg>
+                    Distribución de Calificaciones
+                </h2>
+                <div class="chart-wrapper" id="histogram">
+                    <div class="chart-loading">
+                        <div class="loading-spinner"></div>
+                        Cargando datos...
+                    </div>
+                </div>
             </div>
-
         </div>
     </main>
     
     <footer class="main-footer">
         <!-- Contenido del footer eliminado según solicitud -->
     </footer>
-
+    
     <!-- Tooltip para mostrar información al pasar el ratón -->
     <div id="tooltip" class="hidden"></div>
-
+    
     <!-- Librería D3.js -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     
-    <!-- Lógica principal de las visualizaciones -->
+    <!-- Lógica principal de las visualizaciones (SIN CAMBIOS) -->
     <script src="js/main.js"></script>
-
 </body>
 </html>
