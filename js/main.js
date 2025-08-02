@@ -1,11 +1,6 @@
 'use strict';
 
-// Fichero: main.js
-// Proyecto: Dashboard de Análisis de Productos
-// Autor: Gemini
-// Descripción: Script principal para renderizar cuatro visualizaciones interactivas
-// y conectadas utilizando la librería D3.js, con un enfoque en la legibilidad
-// y la eficiencia del rendimiento.
+// Autor, el bromas locas
 
 // ===================================================================================
 // I. CONFIGURACIÓN GLOBAL Y SELECCIÓN DE ELEMENTOS
@@ -309,3 +304,4 @@ const hideTooltip = (event) => {
     tooltip.classed("hidden", true);
     d3.select(event.currentTarget).style("filter", "none");
 };
+
