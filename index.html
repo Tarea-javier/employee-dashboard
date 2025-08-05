@@ -191,6 +191,14 @@
             </button>
         </div>
         
+        <!-- Breadcrumbs de Navegación -->
+        <div class="breadcrumbs-container">
+            <span class="breadcrumbs-label">Filtros activos:</span>
+            <div id="breadcrumbs-list">
+                <span class="breadcrumbs-empty">Ningún filtro aplicado</span>
+            </div>
+        </div>
+        
         <!-- Controles y Filtros Originales -->
         <div class="controls-container">
             <div id="info-box">
@@ -213,7 +221,11 @@
         <!-- Contenedor principal para las visualizaciones -->
         <div class="visualizations-grid">
             
-            <div id="barchart-container" class="viz-card">
+            <div id="barchart-container" class="viz-card" data-chart="barchart">
+                <div class="export-controls">
+                    <button class="export-btn" data-action="expand" title="Expandir">⛶</button>
+                    <button class="export-btn" data-action="export" title="Exportar">↓</button>
+                </div>
                 <h2 class="viz-title">
                     <svg class="viz-icon">
                         <use href="#bar-chart-icon"></use>
@@ -228,7 +240,11 @@
                 </div>
             </div>
             
-            <div id="discount-container" class="viz-card">
+            <div id="discount-container" class="viz-card" data-chart="discount">
+                <div class="export-controls">
+                    <button class="export-btn" data-action="expand" title="Expandir">⛶</button>
+                    <button class="export-btn" data-action="export" title="Exportar">↓</button>
+                </div>
                 <h2 class="viz-title">
                     <svg class="viz-icon">
                         <use href="#discount-icon"></use>
@@ -243,7 +259,11 @@
                 </div>
             </div>
             
-            <div id="scatterplot-container" class="viz-card">
+            <div id="scatterplot-container" class="viz-card" data-chart="scatter">
+                <div class="export-controls">
+                    <button class="export-btn" data-action="expand" title="Expandir">⛶</button>
+                    <button class="export-btn" data-action="export" title="Exportar">↓</button>
+                </div>
                 <h2 class="viz-title">
                     <svg class="viz-icon">
                         <use href="#scatter-icon"></use>
@@ -273,7 +293,11 @@
                 </div>
             </div>
             
-            <div id="histogram-container" class="viz-card">
+            <div id="histogram-container" class="viz-card" data-chart="histogram">
+                <div class="export-controls">
+                    <button class="export-btn" data-action="expand" title="Expandir">⛶</button>
+                    <button class="export-btn" data-action="export" title="Exportar">↓</button>
+                </div>
                 <h2 class="viz-title">
                     <svg class="viz-icon">
                         <use href="#histogram-icon"></use>
@@ -288,7 +312,11 @@
                 </div>
             </div>
             
-            <div id="heatmap-container" class="viz-card">
+            <div id="heatmap-container" class="viz-card" data-chart="heatmap">
+                <div class="export-controls">
+                    <button class="export-btn" data-action="expand" title="Expandir">⛶</button>
+                    <button class="export-btn" data-action="export" title="Exportar">↓</button>
+                </div>
                 <h2 class="viz-title">
                     <svg class="viz-icon">
                         <use href="#grid-icon"></use>
@@ -303,7 +331,11 @@
                 </div>
             </div>
             
-            <div id="boxplot-container" class="viz-card">
+            <div id="boxplot-container" class="viz-card" data-chart="boxplot">
+                <div class="export-controls">
+                    <button class="export-btn" data-action="expand" title="Expandir">⛶</button>
+                    <button class="export-btn" data-action="export" title="Exportar">↓</button>
+                </div>
                 <h2 class="viz-title">
                     <svg class="viz-icon">
                         <use href="#bar-chart-icon"></use>
@@ -326,6 +358,31 @@
     
     <!-- Tooltip para mostrar información al pasar el ratón -->
     <div id="tooltip" class="hidden"></div>
+    
+    <!-- Modal para detalles de producto -->
+    <div class="modal-overlay" id="product-modal">
+        <div class="product-modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">Detalles del Producto</h3>
+                <button class="modal-close" id="modal-close">×</button>
+            </div>
+            <div class="modal-content" id="modal-content">
+                <!-- Contenido dinámico -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Overlay para gráfico expandido -->
+    <div class="chart-expand-overlay" id="chart-overlay">
+        <div class="expand-controls">
+            <button class="expand-btn" id="close-expand" title="Cerrar">
+                <svg viewBox="0 0 24 24">
+                    <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+    </div>
     
     <!-- Librería D3.js -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
