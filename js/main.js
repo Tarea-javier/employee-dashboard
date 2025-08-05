@@ -23,7 +23,7 @@ const productCount = d3.select("#product-count");
 // Escala de colores para categorías de precio
 const colorScale = d3.scaleOrdinal()
     .domain(["Budget", "Mid-Range", "Premium"])
-    .range(["#4dd0e1", "#ffab40", "#7e57c2"]);
+    .range(["#4dd0e1", "#ffab40", "#7e57c2"]); // Colores originales
 
 // Estado de la aplicación
 let allData = [];
@@ -50,7 +50,7 @@ d3.csv("data/amazon_cleaned.csv").then(data => {
                     !isNaN(d.actual_price) && d.actual_price > 0 &&
                     d.main_category && d.discount_percentage > 0;
         
-        // Clasificar productos por rango de precio
+        // Clasificar productos por rango de precio (original)
         if (d.actual_price <= 50) d.price_category = "Budget";
         else if (d.actual_price <= 200) d.price_category = "Mid-Range";
         else d.price_category = "Premium";
@@ -87,7 +87,21 @@ function initializeApp() {
         
         // Registrar gráficos para cross-filtering
         crossFilterManager.registerChart("barchart", { highlightCategory: highlightCategoryInBarChart });
-        crossFilterManager.registerChart("scatter", { highlightCategory: highlightCategoryInScatter });
+        crossFilterManager.registerChart("scatter", { 
+            highlightCategory: highlightCategoryInScatter,
+            clearHighlight: () => {
+                d3.selectAll("#scatterplot .scatter-dot")
+                    .transition()
+                    .duration(200)
+                    .style("opacity", 0.8)
+                    .attr("r", d => {
+                        const radiusScale = d3.scaleSqrt()
+                            .domain([0, d3.max(allData, d => d.discount_percentage)])
+                            .range([4, 12]);
+                        return radiusScale(d.discount_percentage);
+                    });
+            }
+        });
         crossFilterManager.registerChart("discount", { highlightCategory: highlightCategoryInDiscount });
         crossFilterManager.registerChart("histogram", { highlightCategory: highlightCategoryInHistogram });
     }
@@ -129,9 +143,17 @@ function highlightCategoryInBarChart(category) {
 }
 
 function highlightCategoryInScatter(category) {
+    // Usar transiciones suaves SOLO para el scatter plot
     d3.selectAll("#scatterplot .scatter-dot")
-        .classed("highlighted", d => d.main_category === category)
-        .classed("dimmed", d => d.main_category !== category);
+        .transition()
+        .duration(200)
+        .style("opacity", d => d.main_category === category ? 1 : 0.2)
+        .attr("r", d => {
+            const baseRadius = d3.scaleSqrt()
+                .domain([0, d3.max(allData, d => d.discount_percentage)])
+                .range([4, 12])(d.discount_percentage);
+            return d.main_category === category ? baseRadius * 1.2 : baseRadius;
+        });
 }
 
 function highlightCategoryInDiscount(category) {
@@ -459,7 +481,9 @@ const moveTooltip = (event) => {
 
 const hideTooltip = (event) => {
     tooltip.classed("hidden", true);
-    d3.select(event.currentTarget).style("filter", "none");
+    if (event && event.currentTarget) {
+        d3.select(event.currentTarget).style("filter", "none");
+    }
 };
 
 // Función global para redibujar gráficos expandidos
