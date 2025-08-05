@@ -60,6 +60,50 @@
                 <rect x="11" y="11" width="4" height="10" fill="none" stroke="currentColor" stroke-width="2"/>
                 <rect x="15" y="4" width="4" height="17" fill="none" stroke="currentColor" stroke-width="2"/>
             </symbol>
+            
+            <!-- Iconos nuevos de Feather Icons -->
+            <symbol id="package-icon" viewBox="0 0 24 24">
+                <line x1="16.5" y1="9.4" x2="7.5" y2="4.21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline points="3.27,6.96 12,12.01 20.73,6.96" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="12" y1="22.08" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </symbol>
+            
+            <symbol id="percent-icon" viewBox="0 0 24 24">
+                <line x1="19" y1="5" x2="5" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="6.5" cy="6.5" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/>
+                <circle cx="17.5" cy="17.5" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/>
+            </symbol>
+            
+            <symbol id="star-icon" viewBox="0 0 24 24">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </symbol>
+            
+            <symbol id="award-icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+                <polyline points="8.21,13.89 7,23 12,20 17,23 15.79,13.88" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </symbol>
+            
+            <symbol id="search-icon" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8" fill="none" stroke="currentColor" stroke-width="2"/>
+                <path d="m21 21-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </symbol>
+            
+            <symbol id="dollar-sign-icon" viewBox="0 0 24 24">
+                <line x1="12" y1="1" x2="12" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </symbol>
+            
+            <symbol id="filter-icon" viewBox="0 0 24 24">
+                <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </symbol>
+            
+            <symbol id="grid-icon" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="7" height="7" fill="none" stroke="currentColor" stroke-width="2"/>
+                <rect x="14" y="3" width="7" height="7" fill="none" stroke="currentColor" stroke-width="2"/>
+                <rect x="14" y="14" width="7" height="7" fill="none" stroke="currentColor" stroke-width="2"/>
+                <rect x="3" y="14" width="7" height="7" fill="none" stroke="currentColor" stroke-width="2"/>
+            </symbol>
         </defs>
     </svg>
 
@@ -69,7 +113,85 @@
     </header>
     
     <main class="container">
-        <!-- Controles y Filtros -->
+        <!-- KPI Cards Section -->
+        <section class="kpi-section">
+            <div class="kpi-card">
+                <svg class="kpi-icon">
+                    <use href="#package-icon"></use>
+                </svg>
+                <div class="kpi-content">
+                    <span class="kpi-value" id="total-products">-</span>
+                    <span class="kpi-label">Productos</span>
+                </div>
+            </div>
+            
+            <div class="kpi-card">
+                <svg class="kpi-icon">
+                    <use href="#percent-icon"></use>
+                </svg>
+                <div class="kpi-content">
+                    <span class="kpi-value" id="avg-discount">-</span>
+                    <span class="kpi-label">Descuento Promedio</span>
+                </div>
+            </div>
+            
+            <div class="kpi-card">
+                <svg class="kpi-icon">
+                    <use href="#award-icon"></use>
+                </svg>
+                <div class="kpi-content">
+                    <span class="kpi-value" id="top-category">-</span>
+                    <span class="kpi-label">Categoría Principal</span>
+                </div>
+            </div>
+            
+            <div class="kpi-card">
+                <svg class="kpi-icon">
+                    <use href="#star-icon"></use>
+                </svg>
+                <div class="kpi-content">
+                    <span class="kpi-value" id="avg-rating">-</span>
+                    <span class="kpi-label">Rating Promedio</span>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Filtros Avanzados -->
+        <div class="filters-panel">
+            <div class="filter-group">
+                <svg class="filter-icon">
+                    <use href="#dollar-sign-icon"></use>
+                </svg>
+                <label for="price-slider">Precio máximo:</label>
+                <input type="range" id="price-slider" min="0" max="10000" value="10000" step="50">
+                <span id="price-display">$10,000</span>
+            </div>
+            
+            <div class="filter-group">
+                <svg class="filter-icon">
+                    <use href="#star-icon"></use>
+                </svg>
+                <label for="rating-slider">Rating mínimo:</label>
+                <input type="range" id="rating-slider" min="1" max="5" value="1" step="0.1">
+                <span id="rating-display">1+ ★</span>
+            </div>
+            
+            <div class="filter-group">
+                <svg class="filter-icon">
+                    <use href="#search-icon"></use>
+                </svg>
+                <input type="text" id="search-box" placeholder="Buscar productos o categorías...">
+            </div>
+            
+            <button id="clear-filters" class="clear-btn">
+                <svg class="reset-icon">
+                    <use href="#reset-icon"></use>
+                </svg>
+                Limpiar Filtros
+            </button>
+        </div>
+        
+        <!-- Controles y Filtros Originales -->
         <div class="controls-container">
             <div id="info-box">
                 <svg class="info-icon">
@@ -165,6 +287,36 @@
                     </div>
                 </div>
             </div>
+            
+            <div id="heatmap-container" class="viz-card">
+                <h2 class="viz-title">
+                    <svg class="viz-icon">
+                        <use href="#grid-icon"></use>
+                    </svg>
+                    Mapa de Calor: Categorías vs Precios
+                </h2>
+                <div class="chart-wrapper" id="heatmap">
+                    <div class="chart-loading">
+                        <div class="loading-spinner"></div>
+                        Cargando datos...
+                    </div>
+                </div>
+            </div>
+            
+            <div id="boxplot-container" class="viz-card">
+                <h2 class="viz-title">
+                    <svg class="viz-icon">
+                        <use href="#bar-chart-icon"></use>
+                    </svg>
+                    Distribución de Precios por Categoría
+                </h2>
+                <div class="chart-wrapper" id="boxplot">
+                    <div class="chart-loading">
+                        <div class="loading-spinner"></div>
+                        Cargando datos...
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
     
@@ -178,7 +330,10 @@
     <!-- Librería D3.js -->
     <script src="https://d3js.org/d3.v7.min.js"></script>
     
-    <!-- Lógica principal de las visualizaciones (SIN CAMBIOS) -->
+    <!-- Nuevos componentes -->
+    <script src="js/components.js"></script>
+    
+    <!-- Lógica principal de las visualizaciones -->
     <script src="js/main.js"></script>
 </body>
 </html>
