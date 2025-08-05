@@ -71,6 +71,360 @@ class KPIManager {
     }
 }
 
+class BreadcrumbsManager {
+    constructor(onFilterRemove) {
+        this.onFilterRemove = onFilterRemove;
+        this.container = d3.select("#breadcrumbs-list");
+        this.filters = [];
+    }
+    
+    addFilter(type, value, displayName) {
+        const id = Date.now() + Math.random();
+        this.filters.push({ id, type, value, displayName });
+        this.render();
+        return id;
+    }
+    
+    removeFilter(id) {
+        const filter = this.filters.find(f => f.id === id);
+        if (filter) {
+            this.filters = this.filters.filter(f => f.id !== id);
+            this.render();
+            this.onFilterRemove(filter.type, filter.value);
+        }
+    }
+    
+    clearAll() {
+        this.filters = [];
+        this.render();
+    }
+    
+    render() {
+        this.container.html("");
+        
+        if (this.filters.length === 0) {
+            this.container.append("span")
+                .attr("class", "breadcrumbs-empty")
+                .text("Ningún filtro aplicado");
+            return;
+        }
+        
+        this.filters.forEach(filter => {
+            const breadcrumb = this.container.append("div")
+                .attr("class", "breadcrumb")
+                .style("animation-delay", (this.filters.indexOf(filter) * 0.1) + "s");
+            
+            breadcrumb.append("span")
+                .text(filter.displayName);
+                
+            breadcrumb.append("button")
+                .attr("class", "breadcrumb-remove")
+                .text("×")
+                .on("click", () => this.removeFilter(filter.id));
+        });
+    }
+}
+
+class CrossFilterManager {
+    constructor() {
+        this.charts = new Map();
+        this.activeFilters = new Map();
+        this.highlightedCategory = null;
+    }
+    
+    registerChart(id, chart) {
+        this.charts.set(id, chart);
+    }
+    
+    highlightCategory(category, sourceChart) {
+        this.highlightedCategory = category;
+        
+        this.charts.forEach((chart, id) => {
+            if (id !== sourceChart && chart.highlightCategory) {
+                chart.highlightCategory(category);
+            }
+        });
+        
+        // Crear conexiones visuales
+        this.createVisualConnections(sourceChart, category);
+    }
+    
+    clearHighlight() {
+        this.highlightedCategory = null;
+        
+        this.charts.forEach(chart => {
+            if (chart.clearHighlight) {
+                chart.clearHighlight();
+            }
+        });
+        
+        // Remover conexiones visuales
+        d3.selectAll(".connection-line").remove();
+    }
+    
+    createVisualConnections(sourceChart, category) {
+        // Implementar líneas de conexión entre gráficos relacionados
+        const sourceElement = document.querySelector(`[data-chart="${sourceChart}"]`);
+        const targetElements = document.querySelectorAll('.viz-card:not([data-chart="' + sourceChart + '"])');
+        
+        // Crear SVG overlay para las conexiones
+        const overlay = d3.select("body").append("svg")
+            .attr("class", "connections-overlay")
+            .style("position", "fixed")
+            .style("top", 0)
+            .style("left", 0)
+            .style("width", "100%")
+            .style("height", "100%")
+            .style("pointer-events", "none")
+            .style("z-index", 100);
+        
+        targetElements.forEach(target => {
+            const line = this.createConnectionLine(sourceElement, target);
+            if (line) {
+                overlay.append("path")
+                    .attr("class", "connection-line")
+                    .attr("d", line)
+                    .classed("visible", true);
+            }
+        });
+        
+        // Auto-remover después de 2 segundos
+        setTimeout(() => {
+            overlay.remove();
+        }, 2000);
+    }
+    
+    createConnectionLine(source, target) {
+        const sourceRect = source.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        
+        const x1 = sourceRect.left + sourceRect.width / 2;
+        const y1 = sourceRect.top + sourceRect.height / 2;
+        const x2 = targetRect.left + targetRect.width / 2;
+        const y2 = targetRect.top + targetRect.height / 2;
+        
+        return `M ${x1} ${y1} Q ${(x1 + x2) / 2} ${Math.min(y1, y2) - 50} ${x2} ${y2}`;
+    }
+}
+
+class ProductModal {
+    constructor() {
+        this.modal = d3.select("#product-modal");
+        this.title = d3.select("#modal-title");
+        this.content = d3.select("#modal-content");
+        this.closeBtn = d3.select("#modal-close");
+        
+        this.setupEventListeners();
+    }
+    
+    setupEventListeners() {
+        this.closeBtn.on("click", () => this.hide());
+        
+        this.modal.on("click", (event) => {
+            if (event.target === this.modal.node()) {
+                this.hide();
+            }
+        });
+        
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && this.modal.classed("visible")) {
+                this.hide();
+            }
+        });
+    }
+    
+    show(product) {
+        this.title.text(product.product_name || "Producto");
+        this.content.html(this.generateProductHTML(product));
+        this.modal.classed("visible", true);
+        document.body.style.overflow = "hidden";
+    }
+    
+    hide() {
+        this.modal.classed("visible", false);
+        document.body.style.overflow = "auto";
+    }
+    
+    generateProductHTML(product) {
+        return `
+            <div class="modal-stat">
+                <span class="modal-stat-label">Precio:</span>
+                <span class="modal-stat-value">${product.actual_price}</span>
+            </div>
+            <div class="modal-stat">
+                <span class="modal-stat-label">Calificación:</span>
+                <span class="modal-stat-value">${product.rating} ★</span>
+            </div>
+            <div class="modal-stat">
+                <span class="modal-stat-label">Reseñas:</span>
+                <span class="modal-stat-value">${product.rating_count.toLocaleString()}</span>
+            </div>
+            <div class="modal-stat">
+                <span class="modal-stat-label">Descuento:</span>
+                <span class="modal-stat-value">${product.discount_percentage}%</span>
+            </div>
+            <div class="modal-stat">
+                <span class="modal-stat-label">Categoría:</span>
+                <span class="modal-stat-value">${product.main_category}</span>
+            </div>
+            <div class="modal-stat">
+                <span class="modal-stat-label">Rango de Precio:</span>
+                <span class="modal-stat-value">${product.price_category}</span>
+            </div>
+        `;
+    }
+}
+
+class ChartExpansionManager {
+    constructor() {
+        this.overlay = d3.select("#chart-overlay");
+        this.closeBtn = d3.select("#close-expand");
+        this.expandedChart = null;
+        
+        this.setupEventListeners();
+    }
+    
+    setupEventListeners() {
+        this.closeBtn.on("click", () => this.collapse());
+        
+        this.overlay.on("click", (event) => {
+            if (event.target === this.overlay.node()) {
+                this.collapse();
+            }
+        });
+        
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && this.expandedChart) {
+                this.collapse();
+            }
+        });
+        
+        // Listeners para botones de expansión
+        document.querySelectorAll('[data-action="expand"]').forEach(btn => {
+            btn.addEventListener("click", (event) => {
+                event.stopPropagation();
+                const chartCard = event.target.closest('.viz-card');
+                this.expand(chartCard);
+            });
+        });
+    }
+    
+    expand(chartCard) {
+        if (this.expandedChart) return;
+        
+        this.expandedChart = chartCard.cloneNode(true);
+        this.expandedChart.classList.add("expanded");
+        
+        // Remover controles de exportación del clon
+        const exportControls = this.expandedChart.querySelector(".export-controls");
+        if (exportControls) exportControls.remove();
+        
+        document.body.appendChild(this.expandedChart);
+        this.overlay.classed("visible", true);
+        document.body.style.overflow = "hidden";
+        
+        // Re-dibujar el gráfico en tamaño expandido
+        setTimeout(() => {
+            this.redrawExpandedChart(chartCard.dataset.chart);
+        }, 400);
+    }
+    
+    collapse() {
+        if (!this.expandedChart) return;
+        
+        this.expandedChart.remove();
+        this.expandedChart = null;
+        this.overlay.classed("visible", false);
+        document.body.style.overflow = "auto";
+    }
+    
+    redrawExpandedChart(chartType) {
+        // Esta función sería llamada desde main.js para re-dibujar
+        if (window.redrawChart) {
+            window.redrawChart(chartType, true);
+        }
+    }
+}
+
+class ExportManager {
+    constructor() {
+        this.setupEventListeners();
+    }
+    
+    setupEventListeners() {
+        document.querySelectorAll('[data-action="export"]').forEach(btn => {
+            btn.addEventListener("click", (event) => {
+                event.stopPropagation();
+                const chartCard = event.target.closest('.viz-card');
+                const chartType = chartCard.dataset.chart;
+                this.exportChart(chartType);
+            });
+        });
+    }
+    
+    exportChart(chartType) {
+        const svg = document.querySelector(`#${chartType} svg`);
+        if (!svg) return;
+        
+        // Crear canvas para exportar
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        
+        const svgData = new XMLSerializer().serializeToString(svg);
+        const svgBlob = new Blob([svgData], {type: "image/svg+xml;charset=utf-8"});
+        const svgUrl = URL.createObjectURL(svgBlob);
+        
+        const img = new Image();
+        img.onload = () => {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `${chartType}-chart.png`;
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+            
+            URL.revokeObjectURL(svgUrl);
+        };
+        img.src = svgUrl;
+    }
+    
+    exportData(data, filename = "amazon-data.csv") {
+        const csv = this.arrayToCSV(data);
+        const blob = new Blob([csv], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.click();
+        
+        URL.revokeObjectURL(url);
+    }
+    
+    arrayToCSV(data) {
+        if (!data.length) return "";
+        
+        const headers = Object.keys(data[0]);
+        const csvRows = [headers.join(",")];
+        
+        data.forEach(row => {
+            const values = headers.map(header => {
+                const value = row[header];
+                return typeof value === "string" ? `"${value}"` : value;
+            });
+            csvRows.push(values.join(","));
+        });
+        
+        return csvRows.join("\n");
+    }
+}
+
 class FiltersManager {
     constructor(onFilterChange) {
         this.onFilterChange = onFilterChange;
@@ -392,5 +746,10 @@ class BoxPlotChart {
 // Export components
 window.KPIManager = KPIManager;
 window.FiltersManager = FiltersManager;
+window.BreadcrumbsManager = BreadcrumbsManager;
+window.CrossFilterManager = CrossFilterManager;
+window.ProductModal = ProductModal;
+window.ChartExpansionManager = ChartExpansionManager;
+window.ExportManager = ExportManager;
 window.HeatmapChart = HeatmapChart;
 window.BoxPlotChart = BoxPlotChart;
