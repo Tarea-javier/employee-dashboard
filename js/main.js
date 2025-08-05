@@ -29,7 +29,8 @@ const colorScale = d3.scaleOrdinal()
 let allData = [];
 let currentFilter = null;
 let filteredData = [];
-let kpiManager, filtersManager;
+let kpiManager, filtersManager, breadcrumbsManager, crossFilterManager;
+let productModal, chartExpansionManager, exportManager;
 let heatmapChart, boxplotChart;
 
 // ===================================================================================
@@ -76,8 +77,19 @@ function initializeApp() {
     if (!kpiManager) {
         kpiManager = new KPIManager(allData);
         filtersManager = new FiltersManager(handleFilterChange);
+        breadcrumbsManager = new BreadcrumbsManager(handleBreadcrumbRemove);
+        crossFilterManager = new CrossFilterManager();
+        productModal = new ProductModal();
+        chartExpansionManager = new ChartExpansionManager();
+        exportManager = new ExportManager();
         heatmapChart = new HeatmapChart("#heatmap", allData);
         boxplotChart = new BoxPlotChart("#boxplot", allData);
+        
+        // Registrar gráficos para cross-filtering
+        crossFilterManager.registerChart("barchart", { highlightCategory: highlightCategoryInBarChart });
+        crossFilterManager.registerChart("scatter", { highlightCategory: highlightCategoryInScatter });
+        crossFilterManager.registerChart("discount", { highlightCategory: highlightCategoryInDiscount });
+        crossFilterManager.registerChart("histogram", { highlightCategory: highlightCategoryInHistogram });
     }
     
     // Aplicar filtros actuales
@@ -99,6 +111,39 @@ function initializeApp() {
     if (!resetButton.on("click")) {
         setupEventListeners();
     }
+}
+
+function handleBreadcrumbRemove(type, value) {
+    if (type === 'category') {
+        currentFilter = null;
+        resetButton.classed("hidden", true);
+    }
+    // Aquí podrías manejar otros tipos de filtros
+    initializeApp();
+}
+
+function highlightCategoryInBarChart(category) {
+    d3.selectAll("#barchart .bar")
+        .classed("highlighted", d => d.category === category)
+        .classed("dimmed", d => d.category !== category);
+}
+
+function highlightCategoryInScatter(category) {
+    d3.selectAll("#scatterplot .scatter-dot")
+        .classed("highlighted", d => d.main_category === category)
+        .classed("dimmed", d => d.main_category !== category);
+}
+
+function highlightCategoryInDiscount(category) {
+    d3.selectAll("#discount-chart .bar")
+        .classed("highlighted", d => d.category === category)
+        .classed("dimmed", d => d.category !== category);
+}
+
+function highlightCategoryInHistogram(category) {
+    // El histograma no se filtra por categoría directamente
+    // pero podríamos cambiar su color o mostrar una indicación
+    d3.select("#histogram").classed("category-highlighted", true);
 }
 
 function setupEventListeners() {
@@ -176,22 +221,43 @@ function drawBarChart(data) {
     svg.selectAll(".bar")
         .data(categoryData)
         .join("rect")
-            .attr("class", "bar")
+            .attr("class", "bar chart-element")
             .attr("x", d => xScale(d.category))
             .attr("width", xScale.bandwidth())
             .attr("y", d => yScale(d.count))
             .attr("height", d => height - yScale(d.count))
             .style("opacity", d => (currentFilter === null || currentFilter === d.category) ? 1 : 0.4)
             .on("click", (event, d) => {
-                currentFilter = currentFilter === d.category ? null : d.category;
+                if (currentFilter === d.category) {
+                    // Si ya está filtrado, quitar filtro
+                    currentFilter = null;
+                    breadcrumbsManager.clearAll();
+                    resetButton.classed("hidden", true);
+                } else {
+                    // Aplicar nuevo filtro
+                    currentFilter = d.category;
+                    breadcrumbsManager.clearAll();
+                    breadcrumbsManager.addFilter('category', d.category, `Categoría: ${d.category}`);
+                    resetButton.classed("hidden", false);
+                }
+                
                 initializeApp();
-                resetButton.classed("hidden", currentFilter === null);
+                crossFilterManager.clearHighlight();
                 d3.selectAll(".bar").style("opacity", bar_d => 
                     (currentFilter === null || currentFilter === bar_d.category) ? 1 : 0.4);
             })
-            .on("mouseover", createTooltipHandler(d => `<h4>${d.category}</h4><p><strong>${d.count.toLocaleString()}</strong> productos</p>`))
-            .on("mousemove", moveTooltip)
-            .on("mouseout", hideTooltip);
+            .on("mouseenter", (event, d) => {
+                // Cross-filtering: destacar categoría en otros gráficos
+                crossFilterManager.highlightCategory(d.category, "barchart");
+                
+                // Tooltip
+                createTooltipHandler(d => `<h4>${d.category}</h4><p><strong>${d.count.toLocaleString()}</strong> productos</p>`)(event, d);
+            })
+            .on("mouseleave", (event, d) => {
+                crossFilterManager.clearHighlight();
+                hideTooltip(event);
+            })
+            .on("mousemove", moveTooltip);
 }
 
 /**
@@ -249,21 +315,34 @@ function drawScatterPlot(data) {
     svg.selectAll(".scatter-dot")
         .data(data, d => d.product_id)
         .join("circle")
-            .attr("class", "scatter-dot")
+            .attr("class", "scatter-dot chart-element")
             .attr("cx", d => xScale(d.rating))
             .attr("cy", d => yScale(d.rating_count))
             .attr("r", d => radiusScale(d.discount_percentage))
             .style("fill", d => colorScale(d.price_category))
-            .on("click", (event, d) => d.product_link && window.open(d.product_link, "_blank"))
-            .on("mouseover", createTooltipHandler(d => `
-                <h4>${d.product_name.substring(0, 40)}...</h4>
-                <p><strong>Calificación:</strong> ${d.rating} ★</p>
-                <p><strong>Popularidad:</strong> ${d.rating_count.toLocaleString()} reseñas</p>
-                <p><strong>Descuento:</strong> ${d.discount_percentage}%</p>
-                <p><strong>Precio:</strong> $${d.actual_price}</p>
-            `))
-            .on("mousemove", moveTooltip)
-            .on("mouseout", hideTooltip);
+            .on("click", (event, d) => {
+                event.stopPropagation();
+                productModal.show(d);
+            })
+            .on("mouseenter", (event, d) => {
+                // Destacar categoría en otros gráficos
+                crossFilterManager.highlightCategory(d.main_category, "scatter");
+                
+                // Tooltip mejorado
+                createTooltipHandler(d => `
+                    <h4>${d.product_name.substring(0, 40)}...</h4>
+                    <p><strong>Calificación:</strong> ${d.rating} ★</p>
+                    <p><strong>Popularidad:</strong> ${d.rating_count.toLocaleString()} reseñas</p>
+                    <p><strong>Descuento:</strong> ${d.discount_percentage}%</p>
+                    <p><strong>Precio:</strong> ${d.actual_price}</p>
+                    <p><em>Click para ver detalles</em></p>
+                `)(event, d);
+            })
+            .on("mouseleave", (event, d) => {
+                crossFilterManager.clearHighlight();
+                hideTooltip(event);
+            })
+            .on("mousemove", moveTooltip);
 }
 
 /**
@@ -382,3 +461,69 @@ const hideTooltip = (event) => {
     tooltip.classed("hidden", true);
     d3.select(event.currentTarget).style("filter", "none");
 };
+
+// Función global para redibujar gráficos expandidos
+window.redrawChart = function(chartType, expanded = false) {
+    const container = expanded ? 
+        d3.select('.viz-card.expanded').select('.chart-wrapper') : 
+        d3.select(`#${chartType}`);
+    
+    if (!container.node()) return;
+    
+    const dataToDisplay = getFilteredData();
+    
+    switch(chartType) {
+        case 'barchart':
+            // Re-implementar drawBarChart con el contenedor específico
+            break;
+        case 'scatter':
+            // Re-implementar drawScatterPlot con el contenedor específico
+            break;
+        case 'discount':
+            // Re-implementar drawDiscountChart con el contenedor específico  
+            break;
+        case 'histogram':
+            // Re-implementar drawHistogram con el contenedor específico
+            break;
+        case 'heatmap':
+            if (heatmapChart) {
+                heatmapChart.data = dataToDisplay;
+                heatmapChart.draw();
+            }
+            break;
+        case 'boxplot':
+            if (boxplotChart) {
+                boxplotChart.data = dataToDisplay;
+                boxplotChart.draw();
+            }
+            break;
+    }
+};
+
+// Atajos de teclado
+document.addEventListener('keydown', (event) => {
+    if (event.ctrlKey || event.metaKey) {
+        switch(event.key) {
+            case 'e':
+                event.preventDefault();
+                if (exportManager) {
+                    exportManager.exportData(getFilteredData(), 'amazon-filtered-data.csv');
+                }
+                break;
+            case 'r':
+                event.preventDefault();
+                currentFilter = null;
+                breadcrumbsManager.clearAll();
+                filtersManager.clearAllFilters();
+                initializeApp();
+                break;
+        }
+    }
+    
+    if (event.key === 'Escape') {
+        currentFilter = null;
+        breadcrumbsManager.clearAll();
+        crossFilterManager.clearHighlight();
+        initializeApp();
+    }
+});
