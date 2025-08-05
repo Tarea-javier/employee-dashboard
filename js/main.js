@@ -1,18 +1,18 @@
 'use strict';
 
-// Autor, el bromas locas
-
 // ===================================================================================
 // I. CONFIGURACIÓN GLOBAL Y SELECCIÓN DE ELEMENTOS
 // ===================================================================================
 const MARGIN = { top: 20, right: 30, bottom: 60, left: 70 };
-const HORIZONTAL_MARGIN = { top: 20, right: 30, bottom: 40, left: 150 }; // Margen mayor para etiquetas horizontales
+const HORIZONTAL_MARGIN = { top: 20, right: 30, bottom: 40, left: 150 };
 
-// Seleccionamos los contenedores del DOM.
+// Seleccionamos los contenedores del DOM
 const barChartContainer = d3.select("#barchart");
-const discountChartContainer = d3.select("#discount-chart"); // NUEVO
+const discountChartContainer = d3.select("#discount-chart");
 const scatterPlotContainer = d3.select("#scatterplot");
 const histogramContainer = d3.select("#histogram");
+const heatmapContainer = d3.select("#heatmap");
+const boxplotContainer = d3.select("#boxplot");
 const tooltip = d3.select("#tooltip");
 
 // Controles
@@ -20,15 +20,17 @@ const resetButton = d3.select("#reset-button");
 const infoTitle = d3.select("#info-title");
 const productCount = d3.select("#product-count");
 
-// Escala de colores para categorías de precio.
+// Escala de colores para categorías de precio
 const colorScale = d3.scaleOrdinal()
     .domain(["Budget", "Mid-Range", "Premium"])
-    .range(["#4dd0e1", "#ffab40", "#7e57c2"]); // Nueva paleta
+    .range(["#4dd0e1", "#ffab40", "#7e57c2"]);
 
 // Estado de la aplicación
 let allData = [];
 let currentFilter = null;
-
+let filteredData = [];
+let kpiManager, filtersManager;
+let heatmapChart, boxplotChart;
 
 // ===================================================================================
 // II. CARGA Y PROCESAMIENTO DE DATOS
@@ -46,9 +48,15 @@ d3.csv("data/amazon_cleaned.csv").then(data => {
                     !isNaN(d.rating_count) && d.rating_count > 0 &&
                     !isNaN(d.actual_price) && d.actual_price > 0 &&
                     d.main_category && d.discount_percentage > 0;
+        
+        // Clasificar productos por rango de precio
+        if (d.actual_price <= 50) d.price_category = "Budget";
+        else if (d.actual_price <= 200) d.price_category = "Mid-Range";
+        else d.price_category = "Premium";
     });
 
     allData = data.filter(d => d.isValid);
+    filteredData = [...allData];
     console.log("Datos válidos tras limpieza:", allData.length, "filas.");
 
     initializeApp();
@@ -58,22 +66,34 @@ d3.csv("data/amazon_cleaned.csv").then(data => {
     barChartContainer.append("p").html("<strong>Error:</strong> No se pudo cargar el archivo <code>data/amazon_cleaned.csv</code>.").style("color", "red");
 });
 
-
 // ===================================================================================
 // III. FUNCIÓN PRINCIPAL DE INICIALIZACIÓN Y EVENTOS
 // ===================================================================================
 function initializeApp() {
-    console.log("Inicializando Dashboard...");
+    console.log("Inicializando Dashboard mejorado...");
     
-    // Aplicar el filtro actual o usar todos los datos
-    const dataToDisplay = currentFilter ? allData.filter(d => d.main_category === currentFilter) : allData;
-
+    // Inicializar componentes nuevos
+    if (!kpiManager) {
+        kpiManager = new KPIManager(allData);
+        filtersManager = new FiltersManager(handleFilterChange);
+        heatmapChart = new HeatmapChart("#heatmap", allData);
+        boxplotChart = new BoxPlotChart("#boxplot", allData);
+    }
+    
+    // Aplicar filtros actuales
+    const dataToDisplay = getFilteredData();
+    
     // Dibujar todas las visualizaciones
-    drawBarChart(allData); // El gráfico de barras siempre muestra el total para permitir la selección
-    drawDiscountChart(dataToDisplay); // NUEVO
+    drawBarChart(allData); // El gráfico de barras siempre muestra el total
+    drawDiscountChart(dataToDisplay);
     drawScatterPlot(dataToDisplay);
     drawHistogram(dataToDisplay);
+    drawHeatmap(dataToDisplay);
+    drawBoxplot(dataToDisplay);
     updateInfoBox(dataToDisplay, currentFilter);
+    
+    // Actualizar KPIs con datos filtrados
+    kpiManager.updateKPIs(dataToDisplay);
 
     // Configurar listeners de eventos solo una vez
     if (!resetButton.on("click")) {
@@ -86,7 +106,7 @@ function setupEventListeners() {
         console.log("Filtro reseteado.");
         currentFilter = null;
         
-        initializeApp(); // Re-inicializa la vista con todos los datos
+        initializeApp();
         
         resetButton.classed("hidden", true);
         d3.selectAll(".bar").style("opacity", 1);
@@ -102,6 +122,36 @@ function setupEventListeners() {
     });
 }
 
+function handleFilterChange(filters) {
+    console.log("Filtros aplicados:", filters);
+    
+    // Aplicar filtros a los datos
+    filteredData = filtersManager.applyFilters(allData);
+    
+    // Si hay filtro de categoría, aplicarlo también
+    if (currentFilter) {
+        filteredData = filteredData.filter(d => d.main_category === currentFilter);
+    }
+    
+    // Re-dibujar visualizaciones con datos filtrados
+    const dataToDisplay = filteredData;
+    
+    drawDiscountChart(dataToDisplay);
+    drawScatterPlot(dataToDisplay);
+    drawHistogram(dataToDisplay);
+    drawHeatmap(dataToDisplay);
+    drawBoxplot(dataToDisplay);
+    updateInfoBox(dataToDisplay, currentFilter);
+    kpiManager.updateKPIs(dataToDisplay);
+}
+
+function getFilteredData() {
+    let data = filteredData;
+    if (currentFilter) {
+        data = data.filter(d => d.main_category === currentFilter);
+    }
+    return data;
+}
 
 // ===================================================================================
 // IV. FUNCIONES DE DIBUJO DE GRÁFICOS
@@ -109,7 +159,6 @@ function setupEventListeners() {
 
 /**
  * Dibuja el Gráfico de Barras de Volumen de Productos.
- * @param {Array} data - El conjunto de datos completo.
  */
 function drawBarChart(data) {
     const categoryCounts = d3.rollup(data, v => v.length, d => d.main_category);
@@ -134,10 +183,11 @@ function drawBarChart(data) {
             .attr("height", d => height - yScale(d.count))
             .style("opacity", d => (currentFilter === null || currentFilter === d.category) ? 1 : 0.4)
             .on("click", (event, d) => {
-                currentFilter = d.category;
-                initializeApp(); // Re-renderizar todo con el nuevo filtro
-                resetButton.classed("hidden", false);
-                d3.selectAll(".bar").style("opacity", bar_d => (bar_d.category === currentFilter) ? 1 : 0.4);
+                currentFilter = currentFilter === d.category ? null : d.category;
+                initializeApp();
+                resetButton.classed("hidden", currentFilter === null);
+                d3.selectAll(".bar").style("opacity", bar_d => 
+                    (currentFilter === null || currentFilter === bar_d.category) ? 1 : 0.4);
             })
             .on("mouseover", createTooltipHandler(d => `<h4>${d.category}</h4><p><strong>${d.count.toLocaleString()}</strong> productos</p>`))
             .on("mousemove", moveTooltip)
@@ -145,11 +195,9 @@ function drawBarChart(data) {
 }
 
 /**
- * NUEVO: Dibuja el Gráfico de Barras Horizontales de Descuento Promedio.
- * @param {Array} data - El conjunto de datos a visualizar.
+ * Dibuja el Gráfico de Barras Horizontales de Descuento Promedio.
  */
 function drawDiscountChart(data) {
-    // Agrupar por categoría y calcular el descuento promedio
     const avgDiscountByCategory = d3.rollup(
         data,
         v => d3.mean(v, d => d.discount_percentage),
@@ -164,11 +212,9 @@ function drawDiscountChart(data) {
     const xScale = d3.scaleLinear().domain([0, d3.max(discountData, d => d.avgDiscount)]).range([0, width]).nice();
     const yScale = d3.scaleBand().domain(discountData.map(d => d.category)).range([0, height]).padding(0.2);
 
-    // Dibujar ejes (invertidos para gráfico horizontal)
     svg.append("g").call(d3.axisLeft(yScale));
     svg.append("g").attr("transform", `translate(0, ${height})`).call(d3.axisBottom(xScale).ticks(5).tickFormat(d => `${d}%`));
 
-    // Etiqueta del eje X
     svg.append("text").attr("class", "axis-label").attr("text-anchor", "middle").attr("x", width / 2).attr("y", height + MARGIN.bottom).text("Descuento Promedio (%)");
 
     svg.selectAll(".discount-bar")
@@ -178,29 +224,25 @@ function drawDiscountChart(data) {
             .attr("x", xScale(0))
             .attr("y", d => yScale(d.category))
             .attr("height", yScale.bandwidth())
-            .attr("width", 0) // Empezar en 0 para la animación
+            .attr("width", 0)
             .on("mouseover", createTooltipHandler(d => `<h4>${d.category}</h4><p>Descuento promedio: <strong>${d.avgDiscount.toFixed(1)}%</strong></p>`))
             .on("mousemove", moveTooltip)
             .on("mouseout", hideTooltip)
-            .transition() // Animación de entrada
+            .transition()
             .duration(800)
             .attr("width", d => xScale(d.avgDiscount));
 }
 
-
 /**
  * Dibuja el Gráfico de Dispersión (Scatter Plot).
- * @param {Array} data - El conjunto de datos a visualizar.
  */
 function drawScatterPlot(data) {
-    // OPTIMIZACIÓN: Con decenas de miles de puntos, cambiar a <canvas> sería más rápido.
-    // Para ~1300 puntos, SVG es ideal porque facilita la interacción por elemento.
     scatterPlotContainer.html("");
     const { width, height, svg } = setupChartContainer(scatterPlotContainer, MARGIN);
 
     const xScale = d3.scaleLinear().domain([1, 5]).range([0, width]);
     const yScale = d3.scaleLog().domain(d3.extent(data, d => d.rating_count)).range([height, 0]).nice();
-    const radiusScale = d3.scaleSqrt().domain([0, d3.max(allData, d => d.discount_percentage)]).range([3, 20]);
+    const radiusScale = d3.scaleSqrt().domain([0, d3.max(allData, d => d.discount_percentage)]).range([3, 15]);
     
     drawAxes(svg, xScale, yScale, width, height, "Popularidad (Nº Calificaciones)", "Calificación (1-5)");
 
@@ -218,6 +260,7 @@ function drawScatterPlot(data) {
                 <p><strong>Calificación:</strong> ${d.rating} ★</p>
                 <p><strong>Popularidad:</strong> ${d.rating_count.toLocaleString()} reseñas</p>
                 <p><strong>Descuento:</strong> ${d.discount_percentage}%</p>
+                <p><strong>Precio:</strong> $${d.actual_price}</p>
             `))
             .on("mousemove", moveTooltip)
             .on("mouseout", hideTooltip);
@@ -225,7 +268,6 @@ function drawScatterPlot(data) {
 
 /**
  * Dibuja el Histograma de Distribución de Calificaciones.
- * @param {Array} data - El conjunto de datos a visualizar.
  */
 function drawHistogram(data) {
     histogramContainer.html("");
@@ -251,6 +293,21 @@ function drawHistogram(data) {
         .on("mouseout", hideTooltip);
 }
 
+/**
+ * Dibuja el Heatmap de Categorías vs Rangos de Precio.
+ */
+function drawHeatmap(data) {
+    heatmapChart.data = data;
+    heatmapChart.draw();
+}
+
+/**
+ * Dibuja el Box Plot de Distribución de Precios.
+ */
+function drawBoxplot(data) {
+    boxplotChart.data = data;
+    boxplotChart.draw();
+}
 
 // ===================================================================================
 // V. FUNCIONES AUXILIARES Y DE UTILIDAD
@@ -275,13 +332,32 @@ function drawAxes(svg, xScale, yScale, width, height, yLabel, xLabel, rotateXLab
 
     const xAxisGroup = svg.append("g").attr("transform", `translate(0, ${height})`).call(xAxis);
     if (rotateXLabels) {
-        xAxisGroup.selectAll("text").attr("transform", "translate(-10,0)rotate(-45)").style("text-anchor", "end");
+        xAxisGroup.selectAll("text")
+            .attr("transform", "translate(-10,0)rotate(-45)")
+            .style("text-anchor", "end");
     }
     
     svg.append("g").call(yAxis);
 
-    svg.append("text").attr("class", "axis-label").attr("text-anchor", "middle").attr("x", width / 2).attr("y", height + MARGIN.bottom - 5).text(xLabel);
-    svg.append("text").attr("class", "axis-label").attr("transform", "rotate(-90)").attr("y", 0 - MARGIN.left).attr("x", 0 - (height / 2)).attr("dy", "1em").style("text-anchor", "middle").text(yLabel);
+    if (xLabel) {
+        svg.append("text")
+            .attr("class", "axis-label")
+            .attr("text-anchor", "middle")
+            .attr("x", width / 2)
+            .attr("y", height + MARGIN.bottom - 5)
+            .text(xLabel);
+    }
+    
+    if (yLabel) {
+        svg.append("text")
+            .attr("class", "axis-label")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - MARGIN.left)
+            .attr("x", 0 - (height / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text(yLabel);
+    }
 }
 
 /** Actualiza el cuadro de información. */
@@ -290,18 +366,19 @@ function updateInfoBox(data, filter) {
     productCount.text(data.length.toLocaleString());
 }
 
-// --- Funciones de Tooltip para reutilizar ---
+// Funciones de Tooltip para reutilizar
 const createTooltipHandler = (htmlContent) => (event, d) => {
     tooltip.html(htmlContent(d))
            .classed("hidden", false);
     d3.select(event.currentTarget).style("filter", "brightness(0.9)");
 };
+
 const moveTooltip = (event) => {
     tooltip.style("left", (event.pageX + 20) + "px")
            .style("top", (event.pageY) + "px");
 };
+
 const hideTooltip = (event) => {
     tooltip.classed("hidden", true);
     d3.select(event.currentTarget).style("filter", "none");
 };
-
